@@ -21,8 +21,9 @@ import java.util.Map;
 @Slf4j
 public class FilmController {
     private final Map<Long, Film> films = new HashMap<>();
-    private final LocalDate minimumReleaseDate = LocalDate.of(1895, 12, 28);
-    private final int size = 200;
+    private static final LocalDate MINIMUM_RELEASE_DATE = LocalDate.of(1895, 12, 28);
+    private static final int MAX_SIZE_DESCRIPTION = 200;
+    private Long id;
 
     @GetMapping
     public Collection<Film> findAll() {
@@ -36,19 +37,16 @@ public class FilmController {
             throw new ValidationException("Название фильма не может быть пустым");
         }
 
-        if (film.getDescription() != null) {
-            if (film.getDescription().length() > size) {
-                log.warn("Валидация по description не пройдена для {}", film);
-                throw new ValidationException("Было введено " + film.getDescription().length() + " символов. " +
-                        "Максимальное количество - 200 символов.");
-            }
+
+        if (film.getDescription() != null && film.getDescription().length() > MAX_SIZE_DESCRIPTION) {
+            log.warn("Валидация по description не пройдена для {}", film);
+            throw new ValidationException("Было введено " + film.getDescription().length() + " символов. " +
+                    "Максимальное количество - 200 символов.");
         }
 
-        if (film.getReleaseDate() != null) {
-            if (film.getReleaseDate().isBefore(minimumReleaseDate)) {
-                log.warn("Валидация по releaseDate не пройдена для {}", film);
-                throw new ValidationException("Дата не может быть раньше 28.12.1895 года");
-            }
+        if (film.getReleaseDate() != null && film.getReleaseDate().isBefore(MINIMUM_RELEASE_DATE)) {
+            log.warn("Валидация по releaseDate не пройдена для {}", film);
+            throw new ValidationException("Дата не может быть раньше 28.12.1895 года");
         }
 
         if (film.getDuration() < 0) {
@@ -74,40 +72,30 @@ public class FilmController {
         if (films.containsKey(film.getId())) {
             Film oldFilm = films.get(film.getId());
 
-            if (film.getName() != null && !film.getName().isBlank()) {
-                if (!film.getName().equals(oldFilm.getName())) {
-                    log.info("Было имя = {}", oldFilm.getName());
-                    oldFilm.setName(film.getName());
-                    log.info("Присвоено новое имя = {}", film.getName());
-                }
+            if (film.getName() != null && !film.getName().isBlank() && !film.getName().equals(oldFilm.getName())) {
+                log.info("Было имя = {}", oldFilm.getName());
+                oldFilm.setName(film.getName());
+                log.info("Присвоено новое имя = {}", film.getName());
             }
 
-            if (film.getDescription() != null) {
-                if (film.getDescription().length() <= size) {
-                    if (!film.getDescription().equals(oldFilm.getDescription())) {
-                        log.info("Было описание = {}", oldFilm.getDescription());
-                        oldFilm.setDescription(film.getDescription());
-                        log.info("Присвоено новое описание = {}", film.getDescription());
-                    }
-                }
+            if (film.getDescription() != null && film.getDescription().length() <= MAX_SIZE_DESCRIPTION &&
+                    !film.getDescription().equals(oldFilm.getDescription())) {
+                log.info("Было описание = {}", oldFilm.getDescription());
+                oldFilm.setDescription(film.getDescription());
+                log.info("Присвоено новое описание = {}", film.getDescription());
             }
 
-            if (film.getDuration() >= 0) {
-                if (film.getDuration() != oldFilm.getDuration()) {
-                    log.info("Была продолжительность = {}", oldFilm.getDuration());
-                    oldFilm.setDuration(film.getDuration());
-                    log.info("Присвоена новая продолжительность = {}", film.getDuration());
-                }
+            if (film.getDuration() >= 0 && film.getDuration() != oldFilm.getDuration()) {
+                log.info("Была продолжительность = {}", oldFilm.getDuration());
+                oldFilm.setDuration(film.getDuration());
+                log.info("Присвоена новая продолжительность = {}", film.getDuration());
             }
 
-            if (film.getReleaseDate() != null) {
-                if (film.getReleaseDate().isAfter(minimumReleaseDate)) {
-                    if (!film.getReleaseDate().equals(oldFilm.getReleaseDate())) {
-                        log.info("Старая дата релиза = {}", oldFilm.getReleaseDate());
-                        oldFilm.setReleaseDate(film.getReleaseDate());
-                        log.info("Новая дата релиза = {}", film.getReleaseDate());
-                    }
-                }
+            if (film.getReleaseDate() != null && film.getReleaseDate().isAfter(MINIMUM_RELEASE_DATE) &&
+                    !film.getReleaseDate().equals(oldFilm.getReleaseDate())) {
+                log.info("Старая дата релиза = {}", oldFilm.getReleaseDate());
+                oldFilm.setReleaseDate(film.getReleaseDate());
+                log.info("Новая дата релиза = {}", film.getReleaseDate());
             }
 
             return oldFilm;
@@ -118,11 +106,11 @@ public class FilmController {
     }
 
     private long getNextId() {
-        long currentMaxId = films.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+        if (films.isEmpty()) {
+            id = 1L;
+            return id;
+        } else {
+            return id++;
+        }
     }
 }
