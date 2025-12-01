@@ -110,7 +110,7 @@ public class FilmController {
             id = 1L;
             return id;
         } else {
-            return id++;
+            return ++id;
         }
     }
 }
