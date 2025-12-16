@@ -3,10 +3,8 @@ package ru.yandex.practicum.filmorate.storage.file;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,8 +13,6 @@ import java.util.Map;
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Long, Film> films = new HashMap<>();
-    private static final LocalDate MINIMUM_RELEASE_DATE = LocalDate.of(1895, 12, 28);
-    private static final int MAX_SIZE_DESCRIPTION = 200;
     private Long id;
 
     @Override
@@ -26,28 +22,6 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film createFilm(Film film) {
-        if (film.getName() == null || film.getName().isBlank()) {
-            log.warn("Валидация по name не пройдена для {}", film);
-            throw new ValidationException("Название фильма не может быть пустым");
-        }
-
-
-        if (film.getDescription() != null && film.getDescription().length() > MAX_SIZE_DESCRIPTION) {
-            log.warn("Валидация по description не пройдена для {}", film);
-            throw new ValidationException("Было введено " + film.getDescription().length() + " символов. " +
-                    "Максимальное количество - 200 символов.");
-        }
-
-        if (film.getReleaseDate() != null && film.getReleaseDate().isBefore(MINIMUM_RELEASE_DATE)) {
-            log.warn("Валидация по releaseDate не пройдена для {}", film);
-            throw new ValidationException("Дата не может быть раньше 28.12.1895 года");
-        }
-
-        if (film.getDuration() < 0) {
-            log.warn("Валидация по duration не пройдена для {}", film);
-            throw new ValidationException("Продолжительность фильма не может быть отрицательным");
-        }
-
         film.setId(getNextId());
 
         log.info("Фильму присвоился id={}.", film.getId());
@@ -58,40 +32,33 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film updateFilm(Film film) {
-        if (film.getId() == null) {
-            log.warn("Валидация по id не пройдена для {}", film);
-            throw new ValidationException("Id должен быть указан");
-        }
-
         if (films.containsKey(film.getId())) {
             Film oldFilm = films.get(film.getId());
 
-            if (film.getName() != null && !film.getName().isBlank() && !film.getName().equals(oldFilm.getName())) {
+            if (!film.getName().equals(oldFilm.getName())) {
                 log.info("Было имя = {}", oldFilm.getName());
                 oldFilm.setName(film.getName());
                 log.info("Присвоено новое имя = {}", film.getName());
             }
 
-            if (film.getDescription() != null && film.getDescription().length() <= MAX_SIZE_DESCRIPTION &&
-                    !film.getDescription().equals(oldFilm.getDescription())) {
+            if (!film.getDescription().equals(oldFilm.getDescription())) {
                 log.info("Было описание = {}", oldFilm.getDescription());
                 oldFilm.setDescription(film.getDescription());
                 log.info("Присвоено новое описание = {}", film.getDescription());
             }
 
-            if (film.getDuration() >= 0 && film.getDuration() != oldFilm.getDuration()) {
+            if (film.getDuration() != oldFilm.getDuration()) {
                 log.info("Была продолжительность = {}", oldFilm.getDuration());
                 oldFilm.setDuration(film.getDuration());
                 log.info("Присвоена новая продолжительность = {}", film.getDuration());
             }
 
-            if (film.getReleaseDate() != null && film.getReleaseDate().isAfter(MINIMUM_RELEASE_DATE) &&
-                    !film.getReleaseDate().equals(oldFilm.getReleaseDate())) {
+            if (!film.getReleaseDate().equals(oldFilm.getReleaseDate())) {
                 log.info("Старая дата релиза = {}", oldFilm.getReleaseDate());
                 oldFilm.setReleaseDate(film.getReleaseDate());
                 log.info("Новая дата релиза = {}", film.getReleaseDate());
             }
-
+            films.put(film.getId(), oldFilm);
             return oldFilm;
         }
 

@@ -18,19 +18,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 class FilmControllerTest {
-
+    private Film film;
     private FilmController controller;
 
     @BeforeEach
     public void server() {
         controller = new FilmController(new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage()));
+        film = new Film("Name", "Description",
+                LocalDate.of(1995, 12, 12), 125);
     }
 
     @Test
     public void getFilm() {
-        Film film = new Film("Name", "Description",
-                LocalDate.of(1995, 12, 12), 125);
-
         controller.createFilm(film);
 
         final List<Film> films = controller.findAll().stream().toList();
@@ -40,57 +39,46 @@ class FilmControllerTest {
 
     @Test
     public void createFilmNameEqualsNull() {
-        Film film = new Film(null, "Description",
-                LocalDate.of(1995, 12, 12), 125);
+        film.setName(null);
 
         assertThrows(ValidationException.class, () -> controller.createFilm(film));
     }
 
     @Test
     public void createFilmNameBlank() {
-        Film film = new Film("", "Description",
-                LocalDate.of(1995, 12, 12), 125);
+        film.setName("");
 
         assertThrows(ValidationException.class, () -> controller.createFilm(film));
     }
 
     @Test
     public void createFilmDescription() {
-        Film film = new Film("Name", "f".repeat(201),
-                LocalDate.of(1995, 12, 12), 125);
+        film.setDescription("f".repeat(201));
 
         assertThrows(ValidationException.class, () -> controller.createFilm(film));
     }
 
     @Test
     public void createFilmReleaseDate() {
-        Film film = new Film("Name", "Description",
-                LocalDate.of(1800, 12, 12), 120);
+        film.setReleaseDate(LocalDate.of(1800, 12, 12));
 
         assertThrows(ValidationException.class, () -> controller.createFilm(film));
     }
 
     @Test
     public void createFilmDuration() {
-        Film film = new Film("Name", "Description",
-                LocalDate.of(1995, 12, 12), -125);
+        film.setDuration(-125);
 
         assertThrows(ValidationException.class, () -> controller.createFilm(film));
     }
 
     @Test
     public void updateFilmIdEqualsNull() {
-        Film film = new Film("Name", "Description",
-                LocalDate.of(1995, 12, 12), 125);
-
         assertThrows(ValidationException.class, () -> controller.updateFilm(film));
     }
 
     @Test
     public void updateFilmNonFound() {
-        Film film = new Film("Name", "Description",
-                LocalDate.of(1995, 12, 12), 125);
-
         film.setId(5L);
 
         assertThrows(NotFoundException.class, () -> controller.updateFilm(film));
@@ -98,9 +86,6 @@ class FilmControllerTest {
 
     @Test
     public void updateFilm() {
-        Film film = new Film("Name", "Description",
-                LocalDate.of(1995, 12, 12), 125);
-
         Film addFilm = controller.createFilm(film);
         addFilm.setName("Film");
 

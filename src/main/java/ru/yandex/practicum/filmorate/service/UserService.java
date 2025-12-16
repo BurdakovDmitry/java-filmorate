@@ -22,6 +22,7 @@ public class UserService {
     }
 
     public User createUser(User user) {
+        userStorage.validationDuplicated(user);
         User newUser = userStorage.createUser(user);
         log.info("Добавлен новый пользователь: {}", user);
         return newUser;

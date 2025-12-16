@@ -4,20 +4,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
 @Component
 public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new HashMap<>();
-    private static final LocalDate PRESENT_TIME = LocalDate.now();
+    private final Map<String, User> uniqueEmail = new HashMap<>();
+    private final Map<String, User> uniqueLogin = new HashMap<>();
     private Long id;
 
     @Override
@@ -27,47 +25,9 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User createUser(User user) {
-        if (user.getEmail() == null) {
-            log.warn("Валидация по email не пройдена для {}", user);
-            throw new ValidationException("Имейл должен быть указан");
-        }
-
-        if (!user.getEmail().contains("@")) {
-            log.warn("Валидация по email не пройдена для {}", user);
-            throw new ValidationException("Некорректный имейл");
-        }
-
-        if (!users.isEmpty()) {
-            for (User mapUser : users.values()) {
-                if (mapUser.getEmail().equals(user.getEmail())) {
-                    log.warn("Валидация по email не пройдена для {}", user);
-                    throw new DuplicatedDataException("Этот имейл уже используется");
-                }
-            }
-        }
-
-        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            log.warn("Валидация по login не пройдена для {}", user);
-            throw new ValidationException("Необходимо указать логин без пробелов");
-        }
-
-        if (!users.isEmpty()) {
-            for (User mapUser : users.values()) {
-                if (mapUser.getLogin().equals(user.getLogin())) {
-                    log.warn("Валидация по login не пройдена для {}", user);
-                    throw new DuplicatedDataException("Этот логин уже используется");
-                }
-            }
-        }
-
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
             log.info("Имя пользователя = логин {}", user.getLogin());
-        }
-
-        if (user.getBirthday() != null && user.getBirthday().isAfter(PRESENT_TIME)) {
-            log.warn("Валидация по birthday не пройдена для {}", user);
-            throw new ValidationException("Дата рождения не может быть больше " + PRESENT_TIME);
         }
 
         user.setId(getNextId());
@@ -75,29 +35,20 @@ public class InMemoryUserStorage implements UserStorage {
         log.info("Пользователю {} присвоился id={}.", user.getLogin(), user.getId());
 
         users.put(user.getId(), user);
+        uniqueEmail.put(user.getEmail(), user);
+        uniqueLogin.put(user.getLogin(), user);
         return user;
     }
 
     @Override
     public User updateUser(User user) {
-        if (user.getId() == null) {
-            log.warn("Валидация по id не пройдена для {}", user);
-            throw new ValidationException("Id должен быть указан");
-        }
-
         if (users.containsKey(user.getId())) {
             User oldUser = users.get(user.getId());
 
-            if (user.getEmail() != null && user.getEmail().contains("@") &&
-                    !user.getEmail().equals(oldUser.getEmail())) {
-                //Создаем новый список для проверки уникального имейла, исключив переданного пользователя
-                List<User> newUsers = listWithoutOriginalUser(users, oldUser);
-
-                for (User mapUser : newUsers) {
-                    if (mapUser.getEmail().equals(user.getEmail())) {
-                        log.warn("Валидация по email не пройдена у {}", user);
-                        throw new DuplicatedDataException("Этот имейл уже используется");
-                    }
+            if (!user.getEmail().equals(oldUser.getEmail())) {
+                if (uniqueEmail.containsKey(user.getEmail())) {
+                    log.warn("Валидация по email не пройдена у {}", user);
+                    throw new DuplicatedDataException("Этот имейл уже используется");
                 }
 
                 log.info("Был имейл = {}", oldUser.getEmail());
@@ -105,16 +56,10 @@ public class InMemoryUserStorage implements UserStorage {
                 log.info("Присвоен новый имейл = {}", user.getEmail());
             }
 
-            if (user.getLogin() != null && !user.getLogin().isBlank() && !user.getLogin().contains(" ") &&
-                    !user.getLogin().equals(oldUser.getLogin())) {
-                //Создаем новый список для проверки уникального логина, исключив переданного пользователя
-                List<User> newUsers = listWithoutOriginalUser(users, oldUser);
-
-                for (User mapUser : newUsers) {
-                    if (mapUser.getLogin().equals(user.getLogin())) {
-                        log.warn("Валидация по login не пройдена у {}", user);
-                        throw new DuplicatedDataException("Этот логин уже используется");
-                    }
+            if (!user.getLogin().equals(oldUser.getLogin())) {
+                if (uniqueLogin.containsKey(user.getLogin())) {
+                    log.warn("Валидация по login не пройдена у {}", user);
+                    throw new DuplicatedDataException("Этот логин уже используется");
                 }
 
                 log.info("Был логин = {}", oldUser.getLogin());
@@ -123,28 +68,25 @@ public class InMemoryUserStorage implements UserStorage {
             }
 
             if (user.getName() == null || user.getName().isBlank()) {
-                if (user.getLogin() != null && !user.getLogin().isBlank() && !user.getLogin().contains(" ")) {
-                    user.setName(user.getLogin());
-                    log.info("Так как имя пользователя не указано, то имя = логин {}", user.getLogin());
-                } else {
-                    log.warn("Валидация по login для name не пройдена у пользователя {}", user);
-                    throw new ValidationException("Необходимо указать логин");
-                }
+                oldUser.setName(user.getLogin());
+                log.info("Так как имя пользователя не указано, то имя = логин {}", user.getLogin());
             }
 
-            if (user.getName() != null && !user.getName().isBlank() && !user.getName().equals(oldUser.getName())) {
+            if (!user.getName().equals(oldUser.getName())) {
                 log.info("Было имя = {}", oldUser.getName());
                 oldUser.setName(user.getName());
                 log.info("Присвоено новое имя = {}", user.getName());
             }
 
-            if (user.getBirthday() != null && user.getBirthday().isBefore(PRESENT_TIME) &&
-                    !user.getBirthday().equals(oldUser.getBirthday())) {
+            if (!user.getBirthday().equals(oldUser.getBirthday())) {
                 log.info("Старая дата рождения = {}", oldUser.getBirthday());
                 oldUser.setBirthday(user.getBirthday());
                 log.info("Новая дата рождения = {}", user.getBirthday());
             }
 
+            users.put(oldUser.getId(), oldUser);
+            uniqueEmail.put(oldUser.getEmail(), oldUser);
+            uniqueLogin.put(oldUser.getLogin(), oldUser);
             return oldUser;
         }
 
@@ -162,6 +104,19 @@ public class InMemoryUserStorage implements UserStorage {
         return users.get(userId);
     }
 
+    @Override
+    public void validationDuplicated(User user) {
+        if (uniqueEmail.containsKey(user.getEmail())) {
+            log.warn("Валидация по email не пройдена для {}", user);
+            throw new DuplicatedDataException("Этот имейл уже используется");
+        }
+
+        if (uniqueLogin.containsKey(user.getLogin())) {
+            log.warn("Валидация по login не пройдена для {}", user);
+            throw new DuplicatedDataException("Этот логин уже используется");
+        }
+    }
+
     private long getNextId() {
         if (users.isEmpty()) {
             id = 1L;
@@ -169,12 +124,5 @@ public class InMemoryUserStorage implements UserStorage {
         } else {
             return ++id;
         }
-    }
-
-    private List<User> listWithoutOriginalUser(Map<Long, User> users, User oldUser) {
-        return users.values()
-                .stream()
-                .filter(newUser -> newUser.getId() != (long) oldUser.getId())
-                .toList();
     }
 }
