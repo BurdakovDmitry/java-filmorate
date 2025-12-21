@@ -6,6 +6,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.file.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,23 +18,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 class FilmControllerTest {
-
+    private Film film;
     private FilmController controller;
 
     @BeforeEach
     public void server() {
-        controller = new FilmController();
+        controller = new FilmController(new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage()));
+        film = new Film("Name", "Description",
+                LocalDate.of(1995, 12, 12), 125);
     }
 
     @Test
     public void getFilm() {
-        Film film = Film.builder()
-                .name("Name")
-                .description("Description")
-                .releaseDate(LocalDate.of(1995, 12, 12))
-                .duration(125)
-                .build();
-
         controller.createFilm(film);
 
         final List<Film> films = controller.findAll().stream().toList();
@@ -41,96 +39,53 @@ class FilmControllerTest {
 
     @Test
     public void createFilmNameEqualsNull() {
-        Film film = Film.builder()
-                .description("Description")
-                .releaseDate(LocalDate.of(1995, 12, 12))
-                .duration(125)
-                .build();
+        film.setName(null);
 
         assertThrows(ValidationException.class, () -> controller.createFilm(film));
     }
 
     @Test
     public void createFilmNameBlank() {
-        Film film = Film.builder()
-                .name("")
-                .description("Description")
-                .releaseDate(LocalDate.of(1995, 12, 12))
-                .duration(125)
-                .build();
+        film.setName("");
 
         assertThrows(ValidationException.class, () -> controller.createFilm(film));
     }
 
     @Test
     public void createFilmDescription() {
-        Film film = Film.builder()
-                .name("Name")
-                .description("f".repeat(201))
-                .releaseDate(LocalDate.of(1995, 12, 12))
-                .duration(125)
-                .build();
+        film.setDescription("f".repeat(201));
 
         assertThrows(ValidationException.class, () -> controller.createFilm(film));
     }
 
     @Test
     public void createFilmReleaseDate() {
-        Film film = Film.builder()
-                .name("Name")
-                .description("Description")
-                .releaseDate(LocalDate.of(1800, 12, 12))
-                .build();
+        film.setReleaseDate(LocalDate.of(1800, 12, 12));
 
         assertThrows(ValidationException.class, () -> controller.createFilm(film));
     }
 
     @Test
     public void createFilmDuration() {
-        Film film = Film.builder()
-                .name("Name")
-                .description("Description")
-                .releaseDate(LocalDate.of(1995, 12, 12))
-                .duration(-125)
-                .build();
+        film.setDuration(-125);
 
         assertThrows(ValidationException.class, () -> controller.createFilm(film));
     }
 
     @Test
     public void updateFilmIdEqualsNull() {
-        Film film = Film.builder()
-                .name("Name")
-                .description("Description")
-                .releaseDate(LocalDate.of(1995, 12, 12))
-                .duration(125)
-                .build();
-
         assertThrows(ValidationException.class, () -> controller.updateFilm(film));
     }
 
     @Test
     public void updateFilmNonFound() {
-        Film film = Film.builder()
-                .id(5L)
-                .name("Name")
-                .description("Description")
-                .releaseDate(LocalDate.of(1995, 12, 12))
-                .duration(125)
-                .build();
+        film.setId(5L);
 
         assertThrows(NotFoundException.class, () -> controller.updateFilm(film));
     }
 
     @Test
     public void updateFilm() {
-        Film film = Film.builder()
-                .name("Name")
-                .description("Description")
-                .releaseDate(LocalDate.of(1995, 12, 12))
-                .duration(125)
-                .build();
-
         Film addFilm = controller.createFilm(film);
         addFilm.setName("Film");
 

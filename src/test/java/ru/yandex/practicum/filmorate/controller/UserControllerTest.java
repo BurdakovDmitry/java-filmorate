@@ -7,6 +7,8 @@ import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,22 +18,24 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 class UserControllerTest {
+    private User user;
+    private User newUser;
+    private User duplicatedUser;
     private UserController controller;
 
     @BeforeEach
     public void server() {
-        controller = new UserController();
+        controller = new UserController(new UserService(new InMemoryUserStorage()));
+        user = new User("user@email.ru", "Login", "Name",
+                LocalDate.of(1995, 12, 12));
+        newUser = new User("newUser@email.ru", "NewLogin", "Name",
+                LocalDate.of(1995, 12, 12));
+        duplicatedUser = new User("duplicatedUser@email.ru", "DuplicatedLogin", "Name",
+                LocalDate.of(1995, 12, 12));
     }
 
     @Test
     public void getUser() {
-        User user = User.builder()
-                .email("user@email.ru")
-                .login("Login")
-                .name("Name")
-                .birthday(LocalDate.of(1995, 12, 12))
-                .build();
-
         controller.createUser(user);
 
         final List<User> users = controller.findAll().stream().toList();
@@ -41,232 +45,113 @@ class UserControllerTest {
 
     @Test
     public void createUserEmailEqualsNull() {
-        User user = User.builder()
-                .login("Login")
-                .name("Name")
-                .birthday(LocalDate.of(1995, 12, 12))
-                .build();
+        user.setEmail(null);
 
         assertThrows(ValidationException.class, () -> controller.createUser(user));
     }
 
     @Test
     public void createUserEmailErrorSyntax() {
-        User user = User.builder()
-                .email("user.email.ru")
-                .login("Login")
-                .name("Name")
-                .birthday(LocalDate.of(1995, 12, 12))
-                .build();
+        user.setEmail("user.email.ru");
 
         assertThrows(ValidationException.class, () -> controller.createUser(user));
     }
 
     @Test
     public void createUserEmailDuplicated() {
-        User user = User.builder()
-                .email("user@email.ru")
-                .login("Login")
-                .name("Name")
-                .birthday(LocalDate.of(1995, 12, 12))
-                .build();
-
         controller.createUser(user);
 
-        User userDuplicated = User.builder()
-                .email("user@email.ru")
-                .login("Login1")
-                .name("Name1")
-                .birthday(LocalDate.of(1995, 12, 31))
-                .build();
+        User userDuplicated = new User("user@email.ru", "Login1", "Name1",
+                LocalDate.of(1995, 12, 31));
 
         assertThrows(DuplicatedDataException.class, () -> controller.createUser(userDuplicated));
     }
 
     @Test
     public void createUserLoginEqualsNull() {
-        User user = User.builder()
-                .email("user@email.ru")
-                .name("Name")
-                .birthday(LocalDate.of(1995, 12, 12))
-                .build();
+        user.setLogin(null);
 
         assertThrows(ValidationException.class, () -> controller.createUser(user));
     }
 
     @Test
     public void createUserLoginBlank() {
-        User user = User.builder()
-                .email("user@email.ru")
-                .login("")
-                .name("Name")
-                .birthday(LocalDate.of(1995, 12, 12))
-                .build();
+        user.setLogin("");
 
         assertThrows(ValidationException.class, () -> controller.createUser(user));
     }
 
     @Test
     public void createUserLoginErrorSyntax() {
-        User user = User.builder()
-                .email("user@email.ru")
-                .login("Login user")
-                .name("Name")
-                .birthday(LocalDate.of(1995, 12, 12))
-                .build();
+        user.setLogin("Login user");
 
         assertThrows(ValidationException.class, () -> controller.createUser(user));
     }
 
     @Test
     public void createUserLoginDuplicated() {
-        User user = User.builder()
-                .email("user@email.ru")
-                .login("Login")
-                .name("Name")
-                .birthday(LocalDate.of(1995, 12, 12))
-                .build();
-
         controller.createUser(user);
 
-        User userDuplicated = User.builder()
-                .email("userDuplicated@email.ru")
-                .login("Login")
-                .name("NameDuplicated")
-                .birthday(LocalDate.of(1995, 12, 31))
-                .build();
+        User userDuplicated = new User("userDuplicated@email.ru", "Login", "NameDuplicated",
+                LocalDate.of(1995, 12, 31));
 
         assertThrows(DuplicatedDataException.class, () -> controller.createUser(userDuplicated));
     }
 
     @Test
     public void createUserBirthday() {
-        User user = User.builder()
-                .email("user@email.ru")
-                .login("Login")
-                .name("Name")
-                .birthday(LocalDate.of(2100, 12, 12))
-                .build();
+        user.setBirthday(LocalDate.of(2100, 12, 12));
 
         assertThrows(ValidationException.class, () -> controller.createUser(user));
     }
 
     @Test
     public void updateUserIdEqualsNull() {
-        User user = User.builder()
-                .email("user@email.ru")
-                .login("Login")
-                .name("Name")
-                .birthday(LocalDate.of(1995, 12, 12))
-                .build();
-
         assertThrows(ValidationException.class, () -> controller.updateUser(user));
     }
 
     @Test
     public void updateUserNonFound() {
-        User user = User.builder()
-                .id(15L)
-                .email("user@email.ru")
-                .login("Login")
-                .name("Name")
-                .birthday(LocalDate.of(1995, 12, 12))
-                .build();
+        user.setId(10L);
 
         assertThrows(NotFoundException.class, () -> controller.updateUser(user));
     }
 
     @Test
     public void updateUserNameAndLoginEqualsNull() {
-        User user = User.builder()
-                .email("user@email.ru")
-                .login("Login")
-                .name("Name")
-                .birthday(LocalDate.of(1995, 12, 12))
-                .build();
-
         controller.createUser(user);
 
-        User newUser = User.builder()
-                .id(1L)
-                .email("user@email.ru")
-                .login("")
-                .name("")
-                .birthday(LocalDate.of(1995, 12, 12))
-                .build();
+        newUser.setId(1L);
+        newUser.setLogin("");
+        newUser.setName("");
 
         assertThrows(ValidationException.class, () -> controller.updateUser(newUser));
     }
 
     @Test
     public void updateUserEmailDuplicated() {
-        User user = User.builder()
-                .email("user@email.ru")
-                .login("Login")
-                .name("Name")
-                .birthday(LocalDate.of(1995, 12, 12))
-                .build();
-
-        User user1 = User.builder()
-                .email("userDuplicated@email.ru")
-                .login("Login1")
-                .name("Name1")
-                .birthday(LocalDate.of(1995, 12, 13))
-                .build();
-
         controller.createUser(user);
-        controller.createUser(user1);
+        controller.createUser(newUser);
 
-        User userDuplicatedEmail = User.builder()
-                .id(1L)
-                .email("userDuplicated@email.ru")
-                .login("Login")
-                .name("Name")
-                .birthday(LocalDate.of(1995, 12, 12))
-                .build();
+        duplicatedUser.setId(1L);
+        duplicatedUser.setEmail("newUser@email.ru");
 
-        assertThrows(DuplicatedDataException.class, () -> controller.updateUser(userDuplicatedEmail));
+        assertThrows(DuplicatedDataException.class, () -> controller.updateUser(duplicatedUser));
     }
 
     @Test
     public void updateUserLoginDuplicated() {
-        User user = User.builder()
-                .email("user@email.ru")
-                .login("Login")
-                .name("Name")
-                .birthday(LocalDate.of(1995, 12, 12))
-                .build();
-
-        User user1 = User.builder()
-                .email("user1@email.ru")
-                .login("LoginDuplicated")
-                .name("Name1")
-                .birthday(LocalDate.of(1995, 12, 13))
-                .build();
-
         controller.createUser(user);
-        controller.createUser(user1);
+        controller.createUser(newUser);
 
-        User userDuplicatedLogin = User.builder()
-                .id(1L)
-                .email("user@email.ru")
-                .login("LoginDuplicated")
-                .name("Name")
-                .birthday(LocalDate.of(1995, 12, 12))
-                .build();
+        duplicatedUser.setId(1L);
+        duplicatedUser.setLogin("NewLogin");
 
-        assertThrows(DuplicatedDataException.class, () -> controller.updateUser(userDuplicatedLogin));
+        assertThrows(DuplicatedDataException.class, () -> controller.updateUser(duplicatedUser));
     }
 
     @Test
     public void updateUser() {
-        User user = User.builder()
-                .email("user@email.ru")
-                .login("Login")
-                .name("Name")
-                .birthday(LocalDate.of(1995, 12, 12))
-                .build();
-
         final User newUser = controller.createUser(user);
         newUser.setName("");
 

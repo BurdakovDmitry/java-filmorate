@@ -1,16 +1,32 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
-@Builder
+@NoArgsConstructor
 public class Film {
     private Long id;
     private String name;
     private String description;
     private LocalDate releaseDate;
     private int duration;
+    private Set<Long> likeUsers = new HashSet<>();
+
+    @Autowired
+    public Film(String name, String description, LocalDate releaseDate, int duration) {
+        this.name = name;
+        this.description = description;
+        this.releaseDate = releaseDate;
+        this.duration = duration;
+    }
+
+    public int getNumberLikes() {
+        return likeUsers.size();
+    }
 }
