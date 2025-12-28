@@ -17,6 +17,8 @@ public class Film {
     private LocalDate releaseDate;
     private int duration;
     private Set<Long> likeUsers = new HashSet<>();
+    private HashSet<Genre> genres;
+    private Mpa mpa;
 
     @Autowired
     public Film(String name, String description, LocalDate releaseDate, int duration) {
