@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -95,26 +96,23 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User getUserById(Long userId) {
+    public Optional<User> getUserById(Long userId) {
         if (users.get(userId) == null) {
             log.error("Ошибка поиска фильма");
             throw new NotFoundException("Фильм с id = " + userId + " не найден");
         }
 
-        return users.get(userId);
+        return Optional.of(users.get(userId));
     }
 
     @Override
-    public void validationDuplicated(User user) {
-        if (uniqueEmail.containsKey(user.getEmail())) {
-            log.warn("Валидация по email не пройдена для {}", user);
-            throw new DuplicatedDataException("Этот имейл уже используется");
-        }
+    public Optional<User> getUserByEmail(String email) {
+        return Optional.empty();
+    }
 
-        if (uniqueLogin.containsKey(user.getLogin())) {
-            log.warn("Валидация по login не пройдена для {}", user);
-            throw new DuplicatedDataException("Этот логин уже используется");
-        }
+    @Override
+    public Optional<User> getUserByLogin(String login) {
+        return Optional.empty();
     }
 
     private long getNextId() {

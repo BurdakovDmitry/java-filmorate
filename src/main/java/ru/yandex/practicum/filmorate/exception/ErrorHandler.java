@@ -23,6 +23,12 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleDuplicatedDataException(final DuplicatedDataException e) {
+        return new ErrorResponse("Ошибка сервера, найден дубликат", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleDuplicatedDataException(final InternalServerException e) {
         return new ErrorResponse("Ошибка сервера", e.getMessage());
     }
 }
