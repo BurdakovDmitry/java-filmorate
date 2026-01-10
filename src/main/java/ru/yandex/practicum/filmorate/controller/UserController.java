@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -9,13 +10,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.validation.Validation;
 
-import java.time.LocalDate;
-import java.util.Collection;
 import java.util.List;
 
 @Slf4j
@@ -23,32 +25,38 @@ import java.util.List;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
-    private static final LocalDate PRESENT_TIME = LocalDate.now();
     private final UserService userService;
+    private final Validation validation;
 
     @GetMapping
-    public Collection<User> findAll() {
+    public List<UserDto> findAll() {
         return userService.findAll();
     }
 
+    @GetMapping("/{id}")
+        public UserDto getUserById(@PathVariable Long id) {
+        return userService.getUserById(id);
+    }
+
     @PostMapping
-    public User createUser(@RequestBody User user) {
-        validationUser(user);
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserDto createUser(@RequestBody User user) {
+        validation.validationUser(user);
         return userService.createUser(user);
     }
 
     @PutMapping
-    public User updateUser(@RequestBody User user) {
+    public UserDto updateUser(@RequestBody User user) {
         if (user.getId() == null) {
             log.warn("Валидация по id не пройдена для {}", user);
             throw new ValidationException("Id должен быть указан");
         }
 
-        validationUser(user);
+        validation.validationUser(user);
         return userService.updateUser(user);
     }
 
-    @PutMapping("{id}/friends/{friendId}")
+    @PutMapping("/{id}/friends/{friendId}")
     public void addFriend(@PathVariable Long id, @PathVariable Long friendId) {
         userService.addFriends(id, friendId);
     }
@@ -59,34 +67,12 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public List<User> getListFriends(@PathVariable Long id) {
+    public List<UserDto> getListFriends(@PathVariable Long id) {
         return userService.getListFriends(id);
     }
 
-    @GetMapping("{id}/friends/common/{otherId}")
-    public List<User> getMutualFriends(@PathVariable Long id, @PathVariable Long otherId) {
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<UserDto> getMutualFriends(@PathVariable Long id, @PathVariable Long otherId) {
         return userService.getMutualFriends(id, otherId);
-    }
-
-    private void validationUser(User user) {
-        if (user.getEmail() == null) {
-            log.warn("Валидация по email не пройдена для {}", user);
-            throw new ValidationException("Имейл должен быть указан");
-        }
-
-        if (!user.getEmail().contains("@")) {
-            log.warn("Валидация по email не пройдена для {}", user);
-            throw new ValidationException("Некорректный имейл");
-        }
-
-        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            log.warn("Валидация по login не пройдена для {}", user);
-            throw new ValidationException("Необходимо указать логин без пробелов");
-        }
-
-        if (user.getBirthday() != null && user.getBirthday().isAfter(PRESENT_TIME)) {
-            log.warn("Валидация по birthday не пройдена для {}", user);
-            throw new ValidationException("Дата рождения не может быть больше " + PRESENT_TIME);
-        }
     }
 }

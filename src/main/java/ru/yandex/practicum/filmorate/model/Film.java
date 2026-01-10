@@ -5,7 +5,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.Set;
 
 @Data
@@ -16,8 +15,7 @@ public class Film {
     private String description;
     private LocalDate releaseDate;
     private int duration;
-    private Set<Long> likeUsers = new HashSet<>();
-    private HashSet<Genre> genres;
+    private Set<Genre> genres;
     private Mpa mpa;
 
     @Autowired
@@ -26,9 +24,5 @@ public class Film {
         this.description = description;
         this.releaseDate = releaseDate;
         this.duration = duration;
-    }
-
-    public int getNumberLikes() {
-        return likeUsers.size();
     }
 }

@@ -5,8 +5,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -16,7 +14,6 @@ public class User {
     private String login;
     private String name;
     private LocalDate birthday;
-    private Set<Long> friends = new HashSet<>();
 
     @Autowired
     public User(String email, String login, String name, LocalDate birthday) {
