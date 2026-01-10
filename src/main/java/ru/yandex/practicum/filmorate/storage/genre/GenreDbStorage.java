@@ -4,9 +4,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
+import java.sql.ResultSet;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -57,5 +63,36 @@ public class GenreDbStorage implements GenreStorage {
     @Override
     public Set<Genre> getGenresByFilm(Long filmId) {
         return new LinkedHashSet<>(jdbc.query(FIND_BY_FILM_ID_QUERY, mapper, filmId));
+    }
+
+    @Override
+    public void getGenresForFilms(List<Film> films) {
+        if (films.isEmpty()) return;
+
+        List<Long> filmIds = films.stream()
+                .map(Film::getId)
+                .toList();
+
+        String fillAllForFilmsQuery =
+                "SELECT fg.film_id, g.genre_id, g.name " +
+                        "FROM genre AS g " +
+                        "JOIN film_genre AS fg ON g.genre_id = fg.genre_id " +
+                        "WHERE fg.film_id IN (" + String.join(",", Collections.nCopies(filmIds.size(), "?")) + ")";
+
+        Map<Long, Set<Genre>> genresByFilmId = jdbc.query(fillAllForFilmsQuery, (ResultSet rs) -> {
+            Map<Long, Set<Genre>> result = new HashMap<>();
+            while (rs.next()) {
+                Long filmId = rs.getLong("film_id");
+                Genre genre = new Genre(rs.getInt("genre_id"), rs.getString("name"));
+                result.computeIfAbsent(filmId, key -> new LinkedHashSet<>()).add(genre);
+            }
+            return result;
+        }, filmIds.toArray());
+
+        for (Film film : films) {
+            Set<Genre> genres = genresByFilmId != null ?
+                    genresByFilmId.getOrDefault(film.getId(), new LinkedHashSet<>()) : null;
+            film.setGenres(genres);
+        }
     }
 }

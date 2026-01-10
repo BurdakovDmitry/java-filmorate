@@ -24,16 +24,18 @@ public class FilmService {
     private final LikeStorage likeStorage;
     private final GenreStorage genreStorage;
     private final Validation validation;
+    private final FilmMapper filmMapper;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
                        LikeStorage likeStorage,
                        GenreStorage genreStorage,
-                       Validation validation) {
+                       Validation validation, FilmMapper filmMapper) {
         this.filmStorage = filmStorage;
         this.likeStorage = likeStorage;
         this.genreStorage = genreStorage;
         this.validation = validation;
+        this.filmMapper = filmMapper;
     }
 
     public List<FilmDto> findAll() {
@@ -43,15 +45,11 @@ public class FilmService {
             return List.of();
         }
 
-        for (Film film : films) {
-            if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-                film.setGenres(genreStorage.getGenresByFilm(film.getId()));
-            }
-        }
+        genreStorage.getGenresForFilms(films);
 
         log.info("Получен список фильмов: {}", films);
         return films.stream()
-                .map(FilmMapper::mapToFilmDto)
+                .map(filmMapper::mapToFilmDto)
                 .toList();
     }
 
@@ -64,7 +62,7 @@ public class FilmService {
         film.setGenres(genreStorage.getGenresByFilm(film.getId()));
 
         log.info("Получен фильм: {}", film);
-        return FilmMapper.mapToFilmDto(film);
+        return filmMapper.mapToFilmDto(film);
     }
 
     public FilmDto createFilm(Film film) {
@@ -87,7 +85,7 @@ public class FilmService {
         }
 
         log.info("Добавлен новый фильм: {}", newFilm);
-        return FilmMapper.mapToFilmDto(newFilm);
+        return filmMapper.mapToFilmDto(newFilm);
     }
 
     public FilmDto updateFilm(Film film) {
@@ -111,7 +109,7 @@ public class FilmService {
         }
 
         log.info("Обновлены данные фильма: {}", updateFilm);
-        return FilmMapper.mapToFilmDto(updateFilm);
+        return filmMapper.mapToFilmDto(updateFilm);
     }
 
     public void addLike(Long filmId, Long userId) {
@@ -131,12 +129,13 @@ public class FilmService {
     }
 
     public List<FilmDto> getPopularFilms(int count) {
-        List<FilmDto> films = filmStorage.getPopularFilms(count)
-                .stream()
-                .map(FilmMapper::mapToFilmDto)
-                .toList();
+        List<Film> films = filmStorage.getPopularFilms(count);
+
+        genreStorage.getGenresForFilms(films);
 
         log.info("Получен список из {} самых популярных фильмов по количеству лайков", count);
-        return films;
+        return films.stream()
+                .map(filmMapper::mapToFilmDto)
+                .toList();
     }
 }

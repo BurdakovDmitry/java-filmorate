@@ -8,7 +8,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.like.LikeDbStorage;
 import ru.yandex.practicum.filmorate.storage.mappers.FilmRowMapper;
@@ -37,7 +36,7 @@ class FilmDbStorageTest {
     @BeforeEach
     public void createData() {
         film = new Film("Name", "Description",
-                LocalDate.of(1995, 12, 12), 125, new Mpa());
+                LocalDate.of(1995, 12, 12), 125);
         filmStorage.createFilm(film);
     }
 
@@ -98,7 +97,7 @@ class FilmDbStorageTest {
         User user = new User("user@email.ru", "Login", "Name",
                 LocalDate.of(1995, 12, 12));
         Film newFilm = new Film("newName", "newDescription",
-                LocalDate.of(2005, 12, 21), 120, new Mpa());
+                LocalDate.of(2005, 12, 21), 120);
 
         userStorage.createUser(user);
         filmStorage.createFilm(newFilm);

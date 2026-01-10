@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.mappers.GenreRowMapper;
@@ -40,7 +39,7 @@ class GenreDbStorageTest {
     @BeforeEach
     public void createData() {
         Film film = new Film("Name", "Description",
-                LocalDate.of(1995, 12, 12), 125, new Mpa());
+                LocalDate.of(1995, 12, 12), 125);
 
         filmId = filmStorage.createFilm(film).getId();
         genreSet = new LinkedHashSet<>(List.of(

@@ -13,11 +13,11 @@ import java.util.Optional;
 public class FilmDbStorage extends BaseRepository implements FilmStorage {
     private final RowMapper<Film> mapper;
     private static final String FIND_ALL_QUERY =
-            "SELECT f.*, fm.mpa_name " +
+            "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name " +
             "FROM films AS f " +
             "LEFT JOIN film_mpa AS fm ON f.mpa_id = fm.mpa_id ";
     private static final String FIND_BY_ID_QUERY =
-            "SELECT f.*, fm.mpa_name " +
+            "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name " +
             "FROM films AS f " +
             "LEFT JOIN film_mpa AS fm ON f.mpa_id = fm.mpa_id " +
             "WHERE f.film_id = ?";
@@ -26,7 +26,7 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
     private static final String UPDATE_QUERY =
             "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, mpa_id = ? WHERE film_id = ?";
     private static final String FIND_POPULAR_QUERY =
-            "SELECT f.*, fm.mpa_name " +
+            "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name " +
             "FROM films AS f " +
             "LEFT JOIN film_mpa AS fm ON f.mpa_id = fm.mpa_id " +
             "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
@@ -56,7 +56,7 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
-                film.getMpa().getId()
+                (film.getMpa() != null) ? film.getMpa().getId() : null
         );
 
         film.setId(id);
@@ -70,7 +70,7 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
-                film.getMpa().getId(),
+                (film.getMpa() != null) ? film.getMpa().getId() : null,
                 film.getId()
         );
 

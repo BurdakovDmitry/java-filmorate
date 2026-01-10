@@ -19,11 +19,10 @@ public class Film {
     private Mpa mpa;
 
     @Autowired
-    public Film(String name, String description, LocalDate releaseDate, int duration, Mpa mpa) {
+    public Film(String name, String description, LocalDate releaseDate, int duration) {
         this.name = name;
         this.description = description;
         this.releaseDate = releaseDate;
         this.duration = duration;
-        this.mpa = mpa;
     }
 }

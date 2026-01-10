@@ -17,11 +17,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GenreService {
     private final GenreStorage genreStorage;
+    private final GenreMapper genreMapper;
 
     public Set<GenreDto> getGenre() {
         Set<GenreDto> genre = genreStorage.getGenre()
                 .stream()
-                .map(GenreMapper::mapToGenreDto)
+                .map(genreMapper::mapToGenreDto)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
         log.debug("Получен список жанров: {}", genre);
@@ -30,7 +31,7 @@ public class GenreService {
 
     public GenreDto getGenreById(Integer id) {
         return genreStorage.getGenreById(id)
-                .map(GenreMapper::mapToGenreDto)
+                .map(genreMapper::mapToGenreDto)
                 .orElseThrow(() -> {
                     log.warn("Жанр с id = {} не найден", id);
                     return new NotFoundException("Жанр фильма с id = " + id + " не найден");

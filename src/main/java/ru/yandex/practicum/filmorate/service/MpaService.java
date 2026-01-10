@@ -15,11 +15,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MpaService {
     private final MpaStorage mpaStorage;
+    private final MpaMapper mpaMapper;
 
     public List<MpaDto> getMpa() {
         List<MpaDto> mpa = mpaStorage.getMpa()
                 .stream()
-                .map(MpaMapper::mapToMpaDto)
+                .map(mpaMapper::mapToMpaDto)
                 .toList();
 
         log.info("Получен список рейтингов MPA: {}", mpa);
@@ -28,7 +29,7 @@ public class MpaService {
 
     public MpaDto getMpaById(Integer id) {
         return mpaStorage.getMpaById(id)
-                .map(MpaMapper::mapToMpaDto)
+                .map(mpaMapper::mapToMpaDto)
                 .orElseThrow(() -> {
                     log.warn("Рейтинг MPA с id = {} не найден", id);
                     return new NotFoundException("MPA с id = " + id + " не найден");

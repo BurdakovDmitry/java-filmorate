@@ -22,20 +22,22 @@ public class UserService {
     private final UserStorage userStorage;
     private final FriendStorage friendStorage;
     private final Validation validation;
+    private final UserMapper userMapper;
 
     @Autowired
     public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
                        FriendStorage friendStorage,
-                       Validation validation) {
+                       Validation validation, UserMapper userMapper) {
         this.userStorage = userStorage;
         this.friendStorage = friendStorage;
         this.validation = validation;
+        this.userMapper = userMapper;
     }
 
     public List<UserDto> findAll() {
         List<UserDto> users = userStorage.findAll()
                 .stream()
-                .map(UserMapper::mapToUserDto)
+                .map(userMapper::mapToUserDto)
                 .toList();
 
         log.info("Получен список пользователей: {}", users);
@@ -44,7 +46,7 @@ public class UserService {
 
     public UserDto getUserById(Long id) {
         UserDto userDto = userStorage.getUserById(id)
-                .map(UserMapper::mapToUserDto)
+                .map(userMapper::mapToUserDto)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
 
         log.info("Получен пользователь: {}", userDto);
@@ -58,7 +60,7 @@ public class UserService {
         User newUser = userStorage.createUser(user);
 
         log.info("Добавлен новый пользователь: {}", newUser);
-        return UserMapper.mapToUserDto(newUser);
+        return userMapper.mapToUserDto(newUser);
     }
 
     public UserDto updateUser(User user) {
@@ -69,7 +71,7 @@ public class UserService {
         User updateUser = userStorage.updateUser(user);
 
         log.info("Обновлены данные пользователя: {}", user);
-        return UserMapper.mapToUserDto(updateUser);
+        return userMapper.mapToUserDto(updateUser);
     }
 
     public void addFriends(Long userId, Long friendId) {
@@ -97,7 +99,7 @@ public class UserService {
                 .map(Friend::getFriendId)
                 .map(userStorage::getUserById)
                 .flatMap(Optional::stream)
-                .map(UserMapper::mapToUserDto)
+                .map(userMapper::mapToUserDto)
                 .toList();
     }
 
