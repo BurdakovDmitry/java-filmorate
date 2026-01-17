@@ -138,4 +138,21 @@ public class FilmService {
                 .map(filmMapper::mapToFilmDto)
                 .toList();
     }
+
+    public List<FilmDto> getCommonFilms(Long userId, Long friendId) {
+        validation.userById(userId);
+        validation.userById(friendId);
+
+        List<Film> films = filmStorage.getCommonFilms(userId, friendId);
+
+        if (films == null || films.isEmpty()) return List.of();
+
+        genreStorage.getGenresForFilms(films);
+
+        log.info("Получен список общих фильмов друзей, отсортированных по количеству лайков");
+
+        return films.stream()
+                .map(filmMapper::mapToFilmDto)
+                .toList();
+    }
 }
