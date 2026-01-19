@@ -38,12 +38,11 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
             "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name " +
             "FROM films AS f " +
             "JOIN film_mpa AS fm ON f.mpa_id = fm.mpa_id " +
-            "JOIN likes AS l1 ON f.film_id = l1.film_id " +
-            "JOIN likes AS l2 ON f.film_id = l2.film_id " +
-            "JOIN likes AS all_l ON f.film_id = all_l.film_id " +
-            "WHERE l1.user_id = ? AND l2.user_id = ? " +
-            "GROUP BY f.film_id, fm.mpa_name " +
-            "ORDER BY COUNT(DISTINCT all_l.user_id) DESC";
+            "WHERE f.film_id IN (SELECT l1.film_id " +
+                    "FROM likes AS l1 " +
+                    "JOIN likes AS l2 ON l1.film_id = l2.film_id " +
+                    "WHERE l1.user_id = ? AND l2.user_id = ?) " +
+            "ORDER BY (SELECT COUNT(*) FROM likes l WHERE l.film_id = f.film_id) DESC";
 
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc);
