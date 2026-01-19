@@ -14,7 +14,7 @@ import java.util.Optional;
 public class MpaDbStorage implements MpaStorage {
     private final JdbcTemplate jdbc;
     private final RowMapper<Mpa> mapper;
-    private static final String FIND_ALL_QUERY = "SELECT * FROM film_mpa";
+    private static final String FIND_ALL_QUERY = "SELECT * FROM film_mpa ORDER BY mpa_id";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM film_mpa WHERE mpa_id = ?";
 
     @Override

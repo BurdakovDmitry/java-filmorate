@@ -1,0 +1,42 @@
+package ru.yandex.practicum.filmorate.controller;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.DirectorDto;
+import ru.yandex.practicum.filmorate.service.DirectorService;
+
+import java.util.Set;
+
+@RestController
+@RequestMapping("/directors")
+@RequiredArgsConstructor
+@Validated
+public class DirectorController {
+	private final DirectorService directorService;
+
+	@GetMapping
+	public Set<DirectorDto> getAllDirectors() {
+		return directorService.getDirectors();
+	}
+
+	@GetMapping("/{id}")
+	public DirectorDto getDirectorById(@PathVariable Integer id) {
+		return directorService.getDirectorById(id);
+	}
+
+	@PostMapping
+	public DirectorDto createDirector(@RequestBody DirectorDto directorDto) {
+		return directorService.createDirector(directorDto);
+	}
+
+	@PutMapping
+	public DirectorDto updateDirector(@RequestBody DirectorDto directorDto) {
+		return directorService.updateDirector(directorDto);
+	}
+
+	@DeleteMapping("/{id}")
+	public void deleteDirector(@PathVariable Integer id) {
+		directorService.deleteDirector(id);
+	}
+}
