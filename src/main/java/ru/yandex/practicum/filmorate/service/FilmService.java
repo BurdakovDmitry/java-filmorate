@@ -145,7 +145,7 @@ public class FilmService {
         }
 
         return films.stream()
-            .map(filmMapper::mapToFilmDto)
-            .toList();
+                .map(filmMapper::mapToFilmDto)
+                .toList();
     }
 }
