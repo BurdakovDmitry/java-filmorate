@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -134,6 +135,27 @@ public class FilmService {
         genreStorage.getGenresForFilms(films);
 
         log.info("Получен список из {} самых популярных фильмов по количеству лайков", count);
+        return films.stream()
+                .map(filmMapper::mapToFilmDto)
+                .toList();
+    }
+
+    public List<FilmDto> getCommonFilms(Long userId, Long friendId) {
+
+        if (userId.equals(friendId)) {
+            log.warn("Запрошены общие фильмы с самим собой для userId = {}", userId);
+            throw new DuplicatedDataException("ID пользователя и друга не могут совпадать");
+        }
+
+        validation.userById(userId);
+        validation.userById(friendId);
+
+        List<Film> films = filmStorage.getCommonFilms(userId, friendId);
+
+        genreStorage.getGenresForFilms(films);
+
+        log.info("Получен список общих фильмов друзей, отсортированных по количеству лайков");
+
         return films.stream()
                 .map(filmMapper::mapToFilmDto)
                 .toList();

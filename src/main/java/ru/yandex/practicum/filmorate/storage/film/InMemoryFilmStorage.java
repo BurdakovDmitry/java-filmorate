@@ -81,6 +81,11 @@ public class InMemoryFilmStorage implements FilmStorage {
         return List.of();
     }
 
+    @Override
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        return List.of();
+    }
+
     private long getNextId() {
         if (films.isEmpty()) {
             id = 1L;
