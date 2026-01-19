@@ -24,91 +24,91 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @Import({FilmDbStorage.class, FilmRowMapper.class, MpaDbStorage.class, MpaRowMapper.class,
-        UserDbStorage.class, UserRowMapper.class, LikeDbStorage.class})
+	UserDbStorage.class, UserRowMapper.class, LikeDbStorage.class})
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmDbStorageTest {
-    private final FilmDbStorage filmStorage;
-    private final UserDbStorage userStorage;
-    private final LikeDbStorage likeStorage;
-    Film film;
+	private final FilmDbStorage filmStorage;
+	private final UserDbStorage userStorage;
+	private final LikeDbStorage likeStorage;
+	Film film;
 
-    @BeforeEach
-    public void createData() {
-        film = new Film("Name", "Description",
-                LocalDate.of(1995, 12, 12), 125);
-        filmStorage.createFilm(film);
-    }
+	@BeforeEach
+	public void createData() {
+		film = new Film("Name", "Description",
+			LocalDate.of(1995, 12, 12), 125);
+		filmStorage.createFilm(film);
+	}
 
-    @Test
-    void createFilm() {
-        assertThat(film)
-                .isNotNull()
-                .satisfies(filmBase -> assertThat(filmBase.getId()).isPositive());
-    }
+	@Test
+	void createFilm() {
+		assertThat(film)
+			.isNotNull()
+			.satisfies(filmBase -> assertThat(filmBase.getId()).isPositive());
+	}
 
-    @Test
-    void findAll() {
-        List<Film> films = filmStorage.findAll();
+	@Test
+	void findAll() {
+		List<Film> films = filmStorage.findAll();
 
-        assertThat(films)
-                .isNotEmpty()
-                .hasSize(1)
-                .extracting(Film::getName)
-                .contains("Name");
-    }
+		assertThat(films)
+			.isNotEmpty()
+			.hasSize(1)
+			.extracting(Film::getName)
+			.contains("Name");
+	}
 
-    @Test
-    void getFilmById() {
-        Optional<Film> filmOptional = filmStorage.getFilmById(film.getId());
+	@Test
+	void getFilmById() {
+		Optional<Film> filmOptional = filmStorage.getFilmById(film.getId());
 
-        assertThat(filmOptional)
-                .isPresent()
-                .hasValueSatisfying(filmBase -> {
-                    assertThat(filmBase.getId()).isEqualTo(film.getId());
-                    assertThat(filmBase.getName()).isEqualTo("Name");
-                });
-    }
+		assertThat(filmOptional)
+			.isPresent()
+			.hasValueSatisfying(filmBase -> {
+				assertThat(filmBase.getId()).isEqualTo(film.getId());
+				assertThat(filmBase.getName()).isEqualTo("Name");
+			});
+	}
 
-    @Test
-    public void getFilmUnknownId() {
-        Optional<Film> filmOptional = filmStorage.getFilmById(100L);
+	@Test
+	public void getFilmUnknownId() {
+		Optional<Film> filmOptional = filmStorage.getFilmById(100L);
 
-        assertThat(filmOptional).isEmpty();
-    }
+		assertThat(filmOptional).isEmpty();
+	}
 
-    @Test
-    void updateFilm() {
-        film.setName("newName");
-        filmStorage.updateFilm(film);
+	@Test
+	void updateFilm() {
+		film.setName("newName");
+		filmStorage.updateFilm(film);
 
-        Optional<Film> updateFilmOptional = filmStorage.getFilmById(film.getId());
+		Optional<Film> updateFilmOptional = filmStorage.getFilmById(film.getId());
 
-        assertThat(updateFilmOptional)
-                .isPresent()
-                .hasValueSatisfying(filmBase -> {
-                    assertThat(filmBase.getId()).isEqualTo(film.getId());
-                    assertThat(filmBase.getName()).isEqualTo("newName");
-                });
-    }
+		assertThat(updateFilmOptional)
+			.isPresent()
+			.hasValueSatisfying(filmBase -> {
+				assertThat(filmBase.getId()).isEqualTo(film.getId());
+				assertThat(filmBase.getName()).isEqualTo("newName");
+			});
+	}
 
-    @Test
-    void getPopularFilms() {
-        User user = new User("user@email.ru", "Login", "Name",
-                LocalDate.of(1995, 12, 12));
-        Film newFilm = new Film("newName", "newDescription",
-                LocalDate.of(2005, 12, 21), 120);
+	@Test
+	void getPopularFilms() {
+		User user = new User("user@email.ru", "Login", "Name",
+			LocalDate.of(1995, 12, 12));
+		Film newFilm = new Film("newName", "newDescription",
+			LocalDate.of(2005, 12, 21), 120);
 
-        userStorage.createUser(user);
-        filmStorage.createFilm(newFilm);
+		userStorage.createUser(user);
+		filmStorage.createFilm(newFilm);
 
-        likeStorage.addLike(newFilm.getId(), user.getId());
+		likeStorage.addLike(newFilm.getId(), user.getId());
 
-        List<Film> popularFilm = filmStorage.getPopularFilms(5);
+		List<Film> popularFilm = filmStorage.getPopularFilms(5);
 
-        assertThat(popularFilm)
-                .hasSize(2)
-                .extracting(Film::getName)
-                .containsExactly("newName", "Name");
-    }
+		assertThat(popularFilm)
+			.hasSize(2)
+			.extracting(Film::getName)
+			.containsExactly("newName", "Name");
+	}
 }

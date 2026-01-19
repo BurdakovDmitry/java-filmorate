@@ -6,9 +6,9 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.storage.mappers.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.mappers.DirectorRowMapper;
 
 import java.util.*;
 
@@ -16,8 +16,6 @@ import java.util.*;
 @RequiredArgsConstructor
 @Slf4j
 public class DirectorDbStorage implements DirectorStorage {
-	private final JdbcTemplate jdbc;
-
 	private static final String FIND_ALL_QUERY =
 		"SELECT director_id, name FROM directors ORDER BY director_id";
 	private static final String FIND_BY_ID_QUERY =
@@ -42,7 +40,7 @@ public class DirectorDbStorage implements DirectorStorage {
 			"JOIN film_director fd ON d.director_id = fd.director_id " +
 			"WHERE fd.film_id IN (%s) " +
 			"ORDER BY fd.film_id, d.director_id";
-
+	private final JdbcTemplate jdbc;
 	private final DirectorRowMapper directorRowMapper = new DirectorRowMapper();
 
 	@Override

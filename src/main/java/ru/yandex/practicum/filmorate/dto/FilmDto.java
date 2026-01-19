@@ -14,5 +14,5 @@ public record FilmDto(
 	int duration,
 	MpaDto mpa,
 	Set<GenreDto> genres,
-	Set<DirectorDto> directors){
+	Set<DirectorDto> directors) {
 }
