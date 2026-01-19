@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
@@ -67,6 +66,7 @@ public class FilmService {
 			});
 
 		film.setGenres(new LinkedHashSet<>(genreStorage.getGenresByFilm(film.getId())));
+
 		log.info("Получен фильм: {}", film);
 		return filmMapper.mapToFilmDto(film);
 	}
@@ -78,6 +78,8 @@ public class FilmService {
 			film.getGenres().forEach(genre -> validation.genreById(genre.getId()));
 		}
 
+		validation.validateDirectors(film.getDirectors());
+
 		Film newFilm = filmStorage.createFilm(film);
 		long filmId = newFilm.getId();
 
@@ -86,6 +88,13 @@ public class FilmService {
 			newFilm.setGenres(new LinkedHashSet<>(film.getGenres()));
 		} else {
 			newFilm.setGenres(new LinkedHashSet<>());
+		}
+
+		if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+			directorStorage.updateFilmDirectors(filmId, film.getDirectors());
+			newFilm.setDirectors(new LinkedHashSet<>(film.getDirectors()));
+		} else {
+			newFilm.setDirectors(new LinkedHashSet<>());
 		}
 
 		log.info("Добавлен новый фильм: {}", newFilm);
@@ -99,6 +108,8 @@ public class FilmService {
 		if (film.getGenres() != null && !film.getGenres().isEmpty()) {
 			film.getGenres().forEach(genre -> validation.genreById(genre.getId()));
 		}
+
+		validation.validateDirectors(film.getDirectors());
 
 		Film updatedFilm = filmStorage.updateFilm(film);
 		long filmId = film.getId();
@@ -121,6 +132,7 @@ public class FilmService {
 		return filmMapper.mapToFilmDto(updatedFilm);
 	}
 
+
 	public void addLike(Long filmId, Long userId) {
 		validation.filmById(filmId);
 		validation.userById(userId);
@@ -140,14 +152,14 @@ public class FilmService {
 	public List<FilmDto> getPopularFilms(int count) {
 		List<Film> films = filmStorage.getPopularFilms(count);
 		genreStorage.getGenresForFilms(films);
-
+		directorStorage.getDirectorsForFilms(films);
 		log.info("Получен список из {} самых популярных фильмов по количеству лайков", count);
 		return films.stream()
 			.map(filmMapper::mapToFilmDto)
 			.toList();
 	}
 
-	public List<FilmDto> getFilmsByDirector(Integer directorId, String sortBy) {
+	public List<FilmDto> getFilmsByDirector(Long directorId, String sortBy) {
 		directorStorage.getDirectorById(directorId)
 			.orElseThrow(() -> new NotFoundException("Режиссёр с id = " + directorId + " не найден"));
 

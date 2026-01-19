@@ -9,13 +9,13 @@ import java.sql.SQLException;
 
 @Component
 public class FriendRowMapper implements RowMapper<Friend> {
-    @Override
-    public Friend mapRow(ResultSet resultSet, int rowNum) throws SQLException {
-        Friend friend = new Friend();
-        friend.setUserId(resultSet.getLong("user_id"));
-        friend.setFriendId(resultSet.getLong("friend_id"));
-        friend.setStatus(resultSet.getBoolean("status"));
+	@Override
+	public Friend mapRow(ResultSet resultSet, int rowNum) throws SQLException {
+		Friend friend = new Friend();
+		friend.setUserId(resultSet.getLong("user_id"));
+		friend.setFriendId(resultSet.getLong("friend_id"));
+		friend.setStatus(resultSet.getBoolean("status"));
 
-        return friend;
-    }
+		return friend;
+	}
 }

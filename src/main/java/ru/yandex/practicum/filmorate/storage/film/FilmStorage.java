@@ -6,19 +6,19 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FilmStorage {
-    List<Film> findAll();
+	List<Film> findAll();
 
-    Film createFilm(Film film);
+	Film createFilm(Film film);
 
-    Film updateFilm(Film film);
+	Film updateFilm(Film film);
 
-    Optional<Film> getFilmById(Long id);
+	Optional<Film> getFilmById(Long id);
 
-    List<Film> getPopularFilms(int count);
+	List<Film> getPopularFilms(int count);
 
-	List<Film> getFilmsByDirector(Integer directorId);
+	List<Film> getFilmsByDirector(Long directorId);
 
-	List<Film> getFilmsByDirectorSortedByYear(Integer directorId);
+	List<Film> getFilmsByDirectorSortedByYear(Long directorId);
 
-	List<Film> getFilmsByDirectorSortedByLikes(Integer directorId);
+	List<Film> getFilmsByDirectorSortedByLikes(Long directorId);
 }

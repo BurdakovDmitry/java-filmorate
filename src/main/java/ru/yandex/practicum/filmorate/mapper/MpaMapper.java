@@ -6,5 +6,5 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 
 @Mapper(componentModel = "spring")
 public interface MpaMapper {
-    MpaDto mapToMpaDto(Mpa mpa);
+	MpaDto mapToMpaDto(Mpa mpa);
 }

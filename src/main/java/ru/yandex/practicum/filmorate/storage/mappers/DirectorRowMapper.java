@@ -9,12 +9,11 @@ import java.sql.SQLException;
 public class DirectorRowMapper implements RowMapper<Director> {
 	@Override
 	public Director mapRow(ResultSet rs, int rowNum) throws SQLException {
-		Integer id = rs.getInt("director_id");
-		String name = rs.getString("name");
-
+		Long id = rs.getLong("director_id");
 		if (rs.wasNull()) {
-			throw new SQLException("director_id cannot be null");
+			throw new SQLException("director_id не может быть null");
 		}
+		String name = rs.getString("name");
 
 		return new Director(id, name);
 	}
