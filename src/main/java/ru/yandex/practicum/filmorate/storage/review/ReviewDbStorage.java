@@ -22,12 +22,12 @@ public class ReviewDbStorage extends BaseRepository implements ReviewStorage {
     private static final String DELETE_QUERY =
             "DELETE FROM reviews WHERE id = ?";
     private static final String FIND_BY_FILM_ID =
-            "SELECT * " +
+            "SELECT id, content, is_positive, user_id, film_id, useful, created_at " +
             "FROM reviews " +
             "WHERE film_id = ? " +
             "LIMIT ?";
     private static final String FIND_All =
-            "SELECT * " +
+            "SELECT id, content, is_positive, user_id, film_id, useful, created_at " +
             "FROM reviews " +
             "LIMIT ?";
 

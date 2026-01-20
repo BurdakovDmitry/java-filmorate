@@ -22,7 +22,7 @@ public class ReviewLikeDbStorage extends BaseRepository implements ReviewLikeSto
     private static final String DELETE_QUERY =
             "DELETE FROM review_like WHERE review_id = ? AND user_id = ?";
     private static final String FIND_QUERY =
-            "SELECT * FROM review_like WHERE review_id = ? AND user_id = ?";
+            "SELECT review_id, user_id, is_like FROM review_like WHERE review_id = ? AND user_id = ?";
     private static final String DISLIKE_QUERY =
             "UPDATE reviews SET useful = useful - ? WHERE id = ?";
 
