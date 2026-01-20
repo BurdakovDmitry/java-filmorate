@@ -5,7 +5,6 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.model.review.ReviewLike;
 import ru.yandex.practicum.filmorate.storage.BaseRepository;
 
@@ -15,9 +14,9 @@ import java.util.Optional;
 @Component
 public class ReviewLikeDbStorage extends BaseRepository implements ReviewLikeStorage {
     private static final String LIKE_QUERY =
-            "UPDATE reviews SET useful = useful + 1 WHERE id = ?;";
+            "UPDATE reviews SET useful = useful + ? WHERE id = ?";
     private static final String UPDATE_QUERY =
-            "UPDATE review_like SET is_like = ? WHERE review_id = ? AND user_id = ?;";
+            "UPDATE review_like SET is_like = ? WHERE review_id = ? AND user_id = ?";
     private static final String INSERT_QUERY =
             "INSERT INTO review_like (review_id, user_id, is_like) VALUES (?, ?, ?)";
     private static final String DELETE_QUERY =
@@ -25,7 +24,7 @@ public class ReviewLikeDbStorage extends BaseRepository implements ReviewLikeSto
     private static final String FIND_QUERY =
             "SELECT * FROM review_like WHERE review_id = ? AND user_id = ?";
     private static final String DISLIKE_QUERY =
-            "UPDATE reviews SET useful = useful - 1 WHERE id = ?";
+            "UPDATE reviews SET useful = useful - ? WHERE id = ?";
 
     public ReviewLikeDbStorage(JdbcTemplate jdbc) {
         super(jdbc);
@@ -55,27 +54,16 @@ public class ReviewLikeDbStorage extends BaseRepository implements ReviewLikeSto
                 return;
             }
             super.update(UPDATE_QUERY,isLike, reviewId, userId);
-            super.update(isLike ? LIKE_QUERY : DISLIKE_QUERY, reviewId);
-            super.update(isLike ? LIKE_QUERY : DISLIKE_QUERY, reviewId);
+            super.update(isLike ? LIKE_QUERY : DISLIKE_QUERY, 2, reviewId);
             return;
         }
         super.update(INSERT_QUERY, reviewId, userId, isLike);
-        super.update(isLike ? LIKE_QUERY : DISLIKE_QUERY, reviewId);
+        super.update(isLike ? LIKE_QUERY : DISLIKE_QUERY, 1, reviewId);
     }
 
     @Override
     public void removeLike(Long reviewId, Long userId, boolean isLike) {
-        if (getLike(reviewId, userId).isPresent()) {
-            super.update(DELETE_QUERY, reviewId, userId);
-            super.update(isLike ? DISLIKE_QUERY : LIKE_QUERY, reviewId);
-        } else {
-            log.warn("Failed to update review like. Record not found for reviewId: {} and userId: {}",
-                    reviewId,
-                    userId
-            );
-            throw new DuplicatedDataException("Review like record not found for reviewId: " +
-                    reviewId +
-                    " and userId: " + userId);
-        }
+        super.update(DELETE_QUERY,reviewId, userId);
+        super.update(isLike ? DISLIKE_QUERY : LIKE_QUERY, 1, reviewId);
     }
 }
