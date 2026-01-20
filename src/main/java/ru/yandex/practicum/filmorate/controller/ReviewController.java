@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.ReviewDto;
+import ru.yandex.practicum.filmorate.mapper.ReviewMapper;
 import ru.yandex.practicum.filmorate.model.review.Review;
 import ru.yandex.practicum.filmorate.service.ReviewLikeService;
 import ru.yandex.practicum.filmorate.service.ReviewService;
@@ -20,7 +21,7 @@ public class ReviewController {
 
     @PostMapping
     public Review add(@RequestBody ReviewDto dto) {
-        return reviewService.createReview(dto.toReview());
+        return reviewService.createReview(ReviewMapper.fromReviewDto(dto));
     }
 
     @PutMapping

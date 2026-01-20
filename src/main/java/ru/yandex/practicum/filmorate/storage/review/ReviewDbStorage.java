@@ -29,8 +29,8 @@ public class ReviewDbStorage extends BaseRepository implements ReviewStorage {
             "WHERE film_id = ? " +
             "LIMIT ?";
     private static final String FIND_All =
-            "SELECT *" +
-            "FROM reviews" +
+            "SELECT * " +
+            "FROM reviews " +
             "LIMIT ?";
 
     public ReviewDbStorage(JdbcTemplate jdbc, RowMapper<Review> mapper) {
@@ -55,16 +55,12 @@ public class ReviewDbStorage extends BaseRepository implements ReviewStorage {
 
     @Override
     public Optional<Review> getReview(Long reviewId) {
-        try {
-            Review genre = jdbc.queryForObject(
-                    SELECT_QUERY,
-                    new BeanPropertyRowMapper<>(Review.class),
-                    reviewId
-            );
-            return Optional.ofNullable(genre);
-        } catch (EmptyResultDataAccessException e) {
-            return Optional.empty();
-        }
+        List<Review> results = jdbc.query(
+                SELECT_QUERY,
+                new BeanPropertyRowMapper<>(Review.class),
+                reviewId
+        );
+        return results.stream().findFirst();
     }
 
     @Override
@@ -88,12 +84,12 @@ public class ReviewDbStorage extends BaseRepository implements ReviewStorage {
 
     @Override
     public List<Review> getReviewsByFilmId(Long filmid, int limit) {
-        return jdbc.query(FIND_BY_FILM_ID, new ReviewRowMapper(), filmid, limit);
+        return jdbc.query(FIND_BY_FILM_ID, mapper, filmid, limit);
     }
 
     @Override
     public List<Review> getAllReviews(int limit) {
-        return jdbc.query(FIND_All, new ReviewRowMapper(), limit);
+        return jdbc.query(FIND_All, mapper, limit);
     }
 
 }
