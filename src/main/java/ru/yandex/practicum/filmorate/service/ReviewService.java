@@ -51,11 +51,11 @@ public class ReviewService {
         return reviewStorage.updateReview(review);
     }
 
-    public List<Review> getReviewsByFilmId(Long filmid, int limit) {
-        validation.filmById(filmid);
-        if (filmid == null) {
+    public List<Review> getReviewsByFilmId(Long filmId, int limit) {
+        validation.filmById(filmId);
+        if (filmId == null) {
             return reviewStorage.getAllReviews(limit);
         }
-        return reviewStorage.getReviewsByFilmId(filmid, limit);
+        return reviewStorage.getReviewsByFilmId(filmId, limit);
     }
 }

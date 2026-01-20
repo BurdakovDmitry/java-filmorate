@@ -21,24 +21,28 @@ public class ReviewLikeService {
 
     public void like(Long reviewId, Long userId) {
         validation.reviewById(reviewId);
+        validation.userById(userId);
 
         reviewLikeStorage.like(reviewId, userId, true);
     }
 
     public void disLike(Long reviewId, Long userId) {
         validation.reviewById(reviewId);
+        validation.userById(userId);
 
         reviewLikeStorage.like(reviewId, userId, false);
     }
 
     public void removeLike(Long reviewId, Long userId) {
         validation.reviewById(reviewId);
+        validation.userById(userId);
 
         reviewLikeStorage.removeLike(reviewId, userId, true);
     }
 
     public void removeDisLike(Long reviewId, Long userId) {
         validation.reviewById(reviewId);
+        validation.userById(userId);
 
         reviewLikeStorage.removeLike(reviewId, userId, false);
     }
