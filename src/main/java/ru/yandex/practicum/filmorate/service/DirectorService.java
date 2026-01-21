@@ -28,36 +28,28 @@ public class DirectorService {
 		return directors;
 	}
 
-	public DirectorDto getDirectorById(Integer id) {
+	public DirectorDto getDirectorById(Long id) {
 		return directorStorage.getDirectorById(id)
 			.map(directorMapper::mapToDirectorDto)
-			.orElseThrow(() -> {
-				log.warn("Режиссёр с id = {} не найден", id);
-				return new NotFoundException("Режиссёр с id = " + id + " не найден");
-			});
+			.orElseThrow(() -> new NotFoundException("Режиссёр с id = " + id + " не найден"));
 	}
 
 	public DirectorDto createDirector(DirectorDto directorDto) {
 		var director = directorMapper.mapToDirector(directorDto);
 		var createdDirector = directorStorage.createDirector(director);
+		log.info("Создан режиссёр: {}", createdDirector);
 		return directorMapper.mapToDirectorDto(createdDirector);
 	}
 
 	public DirectorDto updateDirector(DirectorDto directorDto) {
-		log.info("Обновление режиссёра: {}", directorDto);
 		var director = directorMapper.mapToDirector(directorDto);
-
 		var updatedDirector = directorStorage.updateDirector(director)
-			.orElseThrow(() -> {
-				log.warn("Режиссёр с id = {} не найден при обновлении", director.getId());
-				return new NotFoundException("Режиссёр с id = " + director.getId() + " не найден");
-			});
-
-		log.info("Режиссёр успешно обновлён: {}", updatedDirector);
+			.orElseThrow(() -> new NotFoundException("Режиссёр с id = " + director.getId() + " не найден"));
+		log.info("Обновлён режиссёр: {}", updatedDirector);
 		return directorMapper.mapToDirectorDto(updatedDirector);
 	}
 
-	public void deleteDirector(Integer id) {
+	public void deleteDirector(Long id) {
 		if (!directorStorage.deleteDirector(id)) {
 			throw new NotFoundException("Режиссёр с id = " + id + " не найден");
 		}

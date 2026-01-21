@@ -1,21 +1,29 @@
 package ru.yandex.practicum.filmorate.storage.director;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.BaseRepository;
 import ru.yandex.practicum.filmorate.storage.mappers.DirectorRowMapper;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Repository
-@RequiredArgsConstructor
 @Slf4j
-public class DirectorDbStorage implements DirectorStorage {
+public class DirectorDbStorage extends BaseRepository implements DirectorStorage {
+	private static final String CREATE_DIRECTOR =
+		"INSERT INTO directors (name) VALUES (?)";
 	private static final String FIND_ALL_QUERY =
 		"SELECT director_id, name FROM directors ORDER BY director_id";
 	private static final String FIND_BY_ID_QUERY =
@@ -24,24 +32,39 @@ public class DirectorDbStorage implements DirectorStorage {
 		"UPDATE directors SET name = ? WHERE director_id = ?";
 	private static final String DELETE_QUERY =
 		"DELETE FROM directors WHERE director_id = ?";
-	private static final String FIND_BY_FILM_ID_QUERY =
-		"SELECT d.director_id, d.name " +
-			"FROM directors AS d " +
-			"JOIN film_director AS fd ON d.director_id = fd.director_id " +
-			"WHERE fd.film_id = ? " +
-			"ORDER BY d.director_id";
-	private static final String DELETE_BY_FILM_ID_QUERY =
-		"DELETE FROM film_director WHERE film_id = ?";
-	private static final String INSERT_TO_FILM_DIRECTOR =
-		"INSERT INTO film_director (film_id, director_id) VALUES (?, ?)";
-	private static final String FIND_DIRECTORS_BY_FILM_IDS =
-		"SELECT fd.film_id, d.director_id, d.name " +
-			"FROM directors d " +
-			"JOIN film_director fd ON d.director_id = fd.director_id " +
-			"WHERE fd.film_id IN (%s) " +
-			"ORDER BY fd.film_id, d.director_id";
-	private final JdbcTemplate jdbc;
+	private static final String FIND_BY_FILM_ID_QUERY = """
+		SELECT d.director_id, d.name
+		FROM directors AS d
+		JOIN film_director AS fd ON d.director_id = fd.director_id
+		WHERE fd.film_id = ?
+		ORDER BY d.director_id
+		""";
+
+	private static final String DELETE_BY_FILM_ID_QUERY = """
+		DELETE FROM film_director
+		WHERE film_id = ?
+		""";
+
+	private static final String INSERT_TO_FILM_DIRECTOR = """
+		INSERT INTO film_director (film_id, director_id)
+		VALUES (?, ?)
+		""";
+
+	private static final String FIND_DIRECTORS_BY_FILM_IDS = """
+		SELECT fd.film_id, d.director_id, d.name
+		FROM directors d
+		JOIN film_director fd ON d.director_id = fd.director_id
+		WHERE fd.film_id IN (%s)
+		ORDER BY fd.film_id, d.director_id
+		""";
+
+	private static final String FIND_BY_NAME = "SELECT director_id, name FROM directors WHERE LOWER(name) LIKE ?";
+
 	private final DirectorRowMapper directorRowMapper = new DirectorRowMapper();
+
+	public DirectorDbStorage(JdbcTemplate jdbc) {
+		super(jdbc);
+	}
 
 	@Override
 	public Set<Director> getDirectors() {
@@ -49,9 +72,9 @@ public class DirectorDbStorage implements DirectorStorage {
 	}
 
 	@Override
-	public Optional<Director> getDirectorById(Integer id) {
+	public Optional<Director> getDirectorById(Long id) {
 		try {
-			return Optional.ofNullable(jdbc.queryForObject(FIND_BY_ID_QUERY, directorRowMapper, id));
+			return jdbc.query(FIND_BY_ID_QUERY, directorRowMapper, id).stream().findFirst();
 		} catch (EmptyResultDataAccessException e) {
 			return Optional.empty();
 		}
@@ -59,18 +82,8 @@ public class DirectorDbStorage implements DirectorStorage {
 
 	@Override
 	public Director createDirector(Director director) {
-		SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbc)
-			.withTableName("directors")
-			.usingGeneratedKeyColumns("director_id");
-
-		Map<String, Object> parameters = Map.of("name", director.getName());
-		Number key = insert.executeAndReturnKey(parameters);
-
-		if (key == null) {
-			throw new RuntimeException("Failed to create director");
-		}
-
-		director.setId(key.intValue());
+		long id = insert(CREATE_DIRECTOR, director.getName());
+		director.setId(id);
 		log.info("Создан режиссёр: {}", director);
 		return director;
 	}
@@ -87,7 +100,7 @@ public class DirectorDbStorage implements DirectorStorage {
 	}
 
 	@Override
-	public boolean deleteDirector(Integer id) {
+	public boolean deleteDirector(Long id) {
 		int rows = jdbc.update(DELETE_QUERY, id);
 		if (rows > 0) {
 			log.info("Удалён режиссёр с id = {}", id);
@@ -100,7 +113,10 @@ public class DirectorDbStorage implements DirectorStorage {
 	@Override
 	public void addDirectors(Long filmId, Set<Director> directors) {
 		for (Director director : directors) {
-			jdbc.update(INSERT_TO_FILM_DIRECTOR, filmId, director.getId());
+			Long directorId = director.getId();
+			if (directorId != null) {
+				jdbc.update(INSERT_TO_FILM_DIRECTOR, filmId, directorId);
+			}
 		}
 	}
 
@@ -127,7 +143,7 @@ public class DirectorDbStorage implements DirectorStorage {
 		List<Long> filmIds = films.stream()
 			.map(Film::getId)
 			.filter(Objects::nonNull)
-			.toList();
+			.collect(Collectors.toList());
 
 		if (filmIds.isEmpty()) return;
 
@@ -144,10 +160,15 @@ public class DirectorDbStorage implements DirectorStorage {
 			return ps;
 		}, rs -> {
 			Long filmId = rs.getLong("film_id");
-			Director director = new Director(
-				rs.getInt("director_id"),
-				rs.getString("name")
-			);
+			Long directorId = rs.getLong("director_id");
+			String name = rs.getString("name");
+
+			if (rs.wasNull()) {
+				log.warn("Получен NULL для director_id в результате запроса");
+				return;
+			}
+
+			Director director = new Director(directorId, name);
 			directorsByFilmId
 				.computeIfAbsent(filmId, k -> new LinkedHashSet<>())
 				.add(director);
@@ -161,5 +182,17 @@ public class DirectorDbStorage implements DirectorStorage {
 		}
 
 		log.info("Загружено режиссёров по фильмам: {}", directorsByFilmId);
+	}
+
+	@Override
+	public List<Director> findByNameContaining(String query) {
+		return jdbc.query(
+			FIND_BY_NAME,
+			(rs, rowNum) -> new Director(
+				rs.getLong("director_id"),
+				rs.getString("name")
+			),
+			"%" + query.toLowerCase() + "%"
+		);
 	}
 }

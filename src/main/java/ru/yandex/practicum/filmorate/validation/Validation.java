@@ -6,14 +6,17 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Slf4j
 @Component
@@ -24,15 +27,17 @@ public class Validation {
 	private final FilmStorage filmStorage;
 	private final MpaStorage mpaStorage;
 	private final GenreStorage genreStorage;
+	private final DirectorStorage directorStorage;
 
 	public Validation(@Qualifier("userDbStorage") UserStorage userStorage,
 					  @Qualifier("filmDbStorage") FilmStorage filmStorage,
 					  MpaStorage mpaStorage,
-					  GenreStorage genreStorage) {
+					  GenreStorage genreStorage, DirectorStorage directorStorage) {
 		this.userStorage = userStorage;
 		this.filmStorage = filmStorage;
 		this.mpaStorage = mpaStorage;
 		this.genreStorage = genreStorage;
+		this.directorStorage = directorStorage;
 	}
 
 	public void userById(Long id) {
@@ -142,6 +147,25 @@ public class Validation {
 		if (film.getDuration() < 0) {
 			log.warn("Валидация по duration не пройдена для {}", film);
 			throw new ValidationException("Продолжительность фильма не может быть отрицательным");
+		}
+	}
+
+	public void validateDirectors(Set<Director> directors) {
+		if (directors == null || directors.isEmpty()) {
+			return;
+		}
+
+		for (Director director : directors) {
+			if (director == null) {
+				throw new IllegalArgumentException("Режиссёр не может быть null");
+			}
+			Long directorId = director.getId();
+			if (directorId == null) {
+				throw new IllegalArgumentException("ID режиссёра не может быть null");
+			}
+			if (directorStorage.getDirectorById(directorId).isEmpty()) {
+				throw new NotFoundException("Режиссёр с id = " + directorId + " не найден");
+			}
 		}
 	}
 }

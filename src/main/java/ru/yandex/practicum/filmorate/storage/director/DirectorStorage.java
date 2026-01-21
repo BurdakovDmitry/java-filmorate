@@ -10,13 +10,13 @@ import java.util.Set;
 public interface DirectorStorage {
 	Set<Director> getDirectors();
 
-	Optional<Director> getDirectorById(Integer id);
+	Optional<Director> getDirectorById(Long id);
 
 	Director createDirector(Director director);
 
 	Optional<Director> updateDirector(Director director);
 
-	boolean deleteDirector(Integer id);
+	boolean deleteDirector(Long id);
 
 	void addDirectors(Long filmId, Set<Director> directors);
 
@@ -27,4 +27,6 @@ public interface DirectorStorage {
 	Set<Director> getDirectorsByFilm(Long filmId);
 
 	void getDirectorsForFilms(List<Film> films);
+
+	List<Director> findByNameContaining(String query);
 }
