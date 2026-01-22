@@ -29,7 +29,7 @@ class MpaDbStorageTest {
                 .isNotEmpty()
                 .hasSize(5)
                 .extracting(Mpa::getName)
-            .containsExactly("G", "PG", "PG-13", "R", "NC-17");
+                .containsExactly("G", "PG", "PG-13", "R", "NC-17");
     }
 
     @Test
