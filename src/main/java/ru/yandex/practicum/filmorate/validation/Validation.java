@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
+import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
@@ -25,6 +26,7 @@ public class Validation {
 	private static final LocalDate MINIMUM_RELEASE_DATE = LocalDate.of(1895, 12, 28);
 	private final UserStorage userStorage;
 	private final FilmStorage filmStorage;
+	private final ReviewStorage reviewStorage;
 	private final MpaStorage mpaStorage;
 	private final GenreStorage genreStorage;
 	private final DirectorStorage directorStorage;
@@ -32,18 +34,28 @@ public class Validation {
 	public Validation(@Qualifier("userDbStorage") UserStorage userStorage,
 					  @Qualifier("filmDbStorage") FilmStorage filmStorage,
 					  MpaStorage mpaStorage,
-					  GenreStorage genreStorage, DirectorStorage directorStorage) {
+					  GenreStorage genreStorage,
+					  DirectorStorage directorStorage,
+					  ReviewStorage reviewStorage) {
 		this.userStorage = userStorage;
 		this.filmStorage = filmStorage;
 		this.mpaStorage = mpaStorage;
 		this.genreStorage = genreStorage;
 		this.directorStorage = directorStorage;
+		this.reviewStorage = reviewStorage;
 	}
 
 	public void userById(Long id) {
 		if (userStorage.getUserById(id).isEmpty()) {
 			log.warn("Пользователь с id = {} в базе данных не найден", id);
 			throw new NotFoundException("Пользователь с id = " + id + " не найден");
+		}
+	}
+
+	public void reviewById(Long id) {
+		if (reviewStorage.getReview(id).isEmpty()) {
+			log.warn("Отзыв с id = {} в базе данных не найден", id);
+			throw new NotFoundException("Отзыв с id = " + id + " не найден");
 		}
 	}
 
@@ -150,6 +162,18 @@ public class Validation {
 		}
 	}
 
+	public void validateFilmYear(Integer year) {
+		int currentYear = LocalDate.now().getYear();
+		if (year < MINIMUM_RELEASE_DATE.getYear()) {
+			log.warn("Год {} меньше минимально допустимого {}", year, MINIMUM_RELEASE_DATE.getYear());
+			throw new ValidationException("Год выпуска фильма не может быть раньше " + MINIMUM_RELEASE_DATE.getYear());
+		}
+		if (year > currentYear) {
+			log.warn("Год {} больше текущего {}", year, currentYear);
+			throw new ValidationException("Год выпуска фильма не может быть позже " + currentYear);
+		}
+	}
+
 	public void validateDirectors(Set<Director> directors) {
 		if (directors == null || directors.isEmpty()) {
 			return;
@@ -169,3 +193,4 @@ public class Validation {
 		}
 	}
 }
+

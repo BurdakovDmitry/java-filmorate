@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @JdbcTest
 @Import({LikeDbStorage.class, FilmDbStorage.class, FilmRowMapper.class, UserDbStorage.class, UserRowMapper.class,
-	MpaDbStorage.class, MpaRowMapper.class})
+	MpaDbStorage.class, MpaRowMapper.class, GenreDbStorage.class, GenreRowMapper.class})
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class LikeDbStorageTest {
@@ -38,7 +38,7 @@ class LikeDbStorageTest {
 	@BeforeEach
 	public void createData() {
 		Film film = new Film("Name", "Description",
-			LocalDate.of(1995, 12, 12), 125);
+			LocalDate.of(1995, 12, 12), 125, null);
 		User user = new User("user@email.ru", "Login", "Name",
 			LocalDate.of(1995, 12, 12));
 
