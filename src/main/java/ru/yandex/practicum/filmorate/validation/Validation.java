@@ -146,9 +146,14 @@ public class Validation {
     }
 
     public void validateFilmYear(Integer year) {
+        int currentYear = LocalDate.now().getYear();
         if (year < MINIMUM_RELEASE_DATE.getYear()) {
             log.warn("Год {} меньше минимально допустимого {}", year, MINIMUM_RELEASE_DATE.getYear());
             throw new ValidationException("Год выпуска фильма не может быть раньше " + MINIMUM_RELEASE_DATE.getYear());
+        }
+        if (year > currentYear) {
+            log.warn("Год {} больше текущего {}", year, currentYear);
+            throw new ValidationException("Год выпуска фильма не может быть позже " + currentYear);
         }
     }
 }
