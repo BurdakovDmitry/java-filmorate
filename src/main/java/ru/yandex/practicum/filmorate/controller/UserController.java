@@ -25,54 +25,54 @@ import java.util.List;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
-    private final UserService userService;
-    private final Validation validation;
+	private final UserService userService;
+	private final Validation validation;
 
-    @GetMapping
-    public List<UserDto> findAll() {
-        return userService.findAll();
-    }
+	@GetMapping
+	public List<UserDto> findAll() {
+		return userService.findAll();
+	}
 
-    @GetMapping("/{id}")
-        public UserDto getUserById(@PathVariable Long id) {
-        return userService.getUserById(id);
-    }
+	@GetMapping("/{id}")
+	public UserDto getUserById(@PathVariable Long id) {
+		return userService.getUserById(id);
+	}
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public UserDto createUser(@RequestBody User user) {
-        validation.validationUser(user);
-        return userService.createUser(user);
-    }
+	@PostMapping
+	@ResponseStatus(HttpStatus.CREATED)
+	public UserDto createUser(@RequestBody User user) {
+		validation.validationUser(user);
+		return userService.createUser(user);
+	}
 
-    @PutMapping
-    public UserDto updateUser(@RequestBody User user) {
-        if (user.getId() == null) {
-            log.warn("Валидация по id не пройдена для {}", user);
-            throw new ValidationException("Id должен быть указан");
-        }
+	@PutMapping
+	public UserDto updateUser(@RequestBody User user) {
+		if (user.getId() == null) {
+			log.warn("Валидация по id не пройдена для {}", user);
+			throw new ValidationException("Id должен быть указан");
+		}
 
-        validation.validationUser(user);
-        return userService.updateUser(user);
-    }
+		validation.validationUser(user);
+		return userService.updateUser(user);
+	}
 
-    @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable Long id, @PathVariable Long friendId) {
-        userService.addFriends(id, friendId);
-    }
+	@PutMapping("/{id}/friends/{friendId}")
+	public void addFriend(@PathVariable Long id, @PathVariable Long friendId) {
+		userService.addFriends(id, friendId);
+	}
 
-    @DeleteMapping("/{id}/friends/{friendId}")
-    public void deleteFriend(@PathVariable Long id, @PathVariable Long friendId) {
-        userService.deleteFriends(id, friendId);
-    }
+	@DeleteMapping("/{id}/friends/{friendId}")
+	public void deleteFriend(@PathVariable Long id, @PathVariable Long friendId) {
+		userService.deleteFriends(id, friendId);
+	}
 
-    @GetMapping("/{id}/friends")
-    public List<UserDto> getListFriends(@PathVariable Long id) {
-        return userService.getListFriends(id);
-    }
+	@GetMapping("/{id}/friends")
+	public List<UserDto> getListFriends(@PathVariable Long id) {
+		return userService.getListFriends(id);
+	}
 
-    @GetMapping("/{id}/friends/common/{otherId}")
-    public List<UserDto> getMutualFriends(@PathVariable Long id, @PathVariable Long otherId) {
-        return userService.getMutualFriends(id, otherId);
-    }
+	@GetMapping("/{id}/friends/common/{otherId}")
+	public List<UserDto> getMutualFriends(@PathVariable Long id, @PathVariable Long otherId) {
+		return userService.getMutualFriends(id, otherId);
+	}
 }

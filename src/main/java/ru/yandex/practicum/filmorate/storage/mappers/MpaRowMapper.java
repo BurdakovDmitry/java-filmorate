@@ -9,12 +9,12 @@ import java.sql.SQLException;
 
 @Component
 public class MpaRowMapper implements RowMapper<Mpa> {
-    @Override
-    public Mpa mapRow(ResultSet resultSet, int rowNum) throws SQLException {
-        Mpa mpa = new Mpa();
-        mpa.setId(resultSet.getInt("mpa_id"));
-        mpa.setName(resultSet.getString("mpa_name"));
+	@Override
+	public Mpa mapRow(ResultSet resultSet, int rowNum) throws SQLException {
+		Mpa mpa = new Mpa();
+		mpa.setId(resultSet.getInt("mpa_id"));
+		mpa.setName(resultSet.getString("mpa_name"));
 
-        return mpa;
-    }
+		return mpa;
+	}
 }

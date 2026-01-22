@@ -26,46 +26,46 @@ import java.util.List;
 @RequestMapping("/films")
 @RequiredArgsConstructor
 public class FilmController {
-    private final FilmService filmService;
-    private final Validation validation;
+	private final FilmService filmService;
+	private final Validation validation;
 
-    @GetMapping
-    public List<FilmDto> findAll() {
-        return filmService.findAll();
-    }
+	@GetMapping
+	public List<FilmDto> findAll() {
+		return filmService.findAll();
+	}
 
-    @GetMapping("/{id}")
-    public FilmDto getFilmById(@PathVariable Long id) {
-        return filmService.getFilmById(id);
-    }
+	@GetMapping("/{id}")
+	public FilmDto getFilmById(@PathVariable Long id) {
+		return filmService.getFilmById(id);
+	}
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public FilmDto createFilm(@RequestBody Film film) {
-        validation.validationFilm(film);
-        return filmService.createFilm(film);
-    }
+	@PostMapping
+	@ResponseStatus(HttpStatus.CREATED)
+	public FilmDto createFilm(@RequestBody Film film) {
+		validation.validationFilm(film);
+		return filmService.createFilm(film);
+	}
 
-    @PutMapping
-    public FilmDto updateFilm(@RequestBody Film film) {
-        if (film.getId() == null) {
-            log.warn("Валидация по id не пройдена для {}", film);
-            throw new ValidationException("Id должен быть указан");
-        }
+	@PutMapping
+	public FilmDto updateFilm(@RequestBody Film film) {
+		if (film.getId() == null) {
+			log.warn("Валидация по id не пройдена для {}", film);
+			throw new ValidationException("Id должен быть указан");
+		}
 
-        validation.validationFilm(film);
-        return filmService.updateFilm(film);
-    }
+		validation.validationFilm(film);
+		return filmService.updateFilm(film);
+	}
 
-    @PutMapping("/{id}/like/{userId}")
-    public void likeFilm(@PathVariable Long id, @PathVariable Long userId) {
-        filmService.addLike(id, userId);
-    }
+	@PutMapping("/{id}/like/{userId}")
+	public void likeFilm(@PathVariable Long id, @PathVariable Long userId) {
+		filmService.addLike(id, userId);
+	}
 
-    @DeleteMapping("/{id}/like/{userId}")
-    public void removeLike(@PathVariable Long id, @PathVariable Long userId) {
-        filmService.deleteLike(id, userId);
-    }
+	@DeleteMapping("/{id}/like/{userId}")
+	public void removeLike(@PathVariable Long id, @PathVariable Long userId) {
+		filmService.deleteLike(id, userId);
+	}
 
     @GetMapping("/popular")
     public List<FilmDto> getPopularFilms(@RequestParam(defaultValue = "10") int count,
@@ -78,4 +78,10 @@ public class FilmController {
     public List<FilmDto> getCommonFilms(@RequestParam Long userId, @RequestParam Long friendId) {
         return filmService.getCommonFilms(userId, friendId);
     }
+
+	@GetMapping("/director/{directorId}")
+	public List<FilmDto> getFilmsByDirector(@PathVariable Long directorId,
+											@RequestParam String sortBy) {
+		return filmService.getFilmsByDirector(directorId, sortBy);
+	}
 }

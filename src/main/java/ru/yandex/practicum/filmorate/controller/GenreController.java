@@ -14,15 +14,15 @@ import java.util.Set;
 @RequestMapping("/genres")
 @RequiredArgsConstructor
 public class GenreController {
-    private final GenreService genreService;
+	private final GenreService genreService;
 
-    @GetMapping()
-    public Set<GenreDto> getGenre() {
-        return genreService.getGenre();
-    }
+	@GetMapping()
+	public Set<GenreDto> getGenre() {
+		return genreService.getGenre();
+	}
 
-    @GetMapping("/{id}")
-    public GenreDto getGenreById(@PathVariable Integer id) {
-        return genreService.getGenreById(id);
-    }
+	@GetMapping("/{id}")
+	public GenreDto getGenreById(@PathVariable Integer id) {
+		return genreService.getGenreById(id);
+	}
 }

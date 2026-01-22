@@ -11,9 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
-import ru.yandex.practicum.filmorate.storage.genre.GenreDbStorage;
 import ru.yandex.practicum.filmorate.storage.mappers.FilmRowMapper;
-import ru.yandex.practicum.filmorate.storage.mappers.GenreRowMapper;
 import ru.yandex.practicum.filmorate.storage.mappers.MpaRowMapper;
 import ru.yandex.practicum.filmorate.storage.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaDbStorage;
@@ -29,13 +27,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class LikeDbStorageTest {
-    private final LikeDbStorage likeStorage;
-    private final UserDbStorage userStorage;
-    private final FilmDbStorage filmStorage;
-    private final JdbcTemplate jdbc;
-    private Long filmId;
-    private Long userId;
-    private static final String INSERT_COUNT_QUERY = "SELECT COUNT(*) FROM likes WHERE film_id = ? AND user_id = ?";
+	private static final String INSERT_COUNT_QUERY = "SELECT COUNT(*) FROM likes WHERE film_id = ? AND user_id = ?";
+	private final LikeDbStorage likeStorage;
+	private final UserDbStorage userStorage;
+	private final FilmDbStorage filmStorage;
+	private final JdbcTemplate jdbc;
+	private Long filmId;
+	private Long userId;
 
     @BeforeEach
     public void createData() {
@@ -44,24 +42,24 @@ class LikeDbStorageTest {
         User user = new User("user@email.ru", "Login", "Name",
                 LocalDate.of(1995, 12, 12));
 
-        filmId = filmStorage.createFilm(film).getId();
-        userId = userStorage.createUser(user).getId();
-        likeStorage.addLike(filmId, userId);
-    }
+		filmId = filmStorage.createFilm(film).getId();
+		userId = userStorage.createUser(user).getId();
+		likeStorage.addLike(filmId, userId);
+	}
 
-    @Test
-    void addLike() {
-        Integer count = jdbc.queryForObject(INSERT_COUNT_QUERY, Integer.class, filmId, userId);
+	@Test
+	void addLike() {
+		Integer count = jdbc.queryForObject(INSERT_COUNT_QUERY, Integer.class, filmId, userId);
 
-        assertEquals(1, count, "Лайк должен был сохраниться в БД");
-    }
+		assertEquals(1, count, "Лайк должен был сохраниться в БД");
+	}
 
-    @Test
-    void deleteLike() {
-        likeStorage.deleteLike(filmId, userId);
+	@Test
+	void deleteLike() {
+		likeStorage.deleteLike(filmId, userId);
 
-        Integer count = jdbc.queryForObject(INSERT_COUNT_QUERY, Integer.class, filmId, userId);
+		Integer count = jdbc.queryForObject(INSERT_COUNT_QUERY, Integer.class, filmId, userId);
 
-        assertEquals(0, count, "Лайк должен был удалиться из БД");
-    }
+		assertEquals(0, count, "Лайк должен был удалиться из БД");
+	}
 }

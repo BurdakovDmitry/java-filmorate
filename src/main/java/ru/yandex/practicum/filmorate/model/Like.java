@@ -6,6 +6,6 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class Like {
-    private Long filmId;
-    private Long userId;
+	private Long filmId;
+	private Long userId;
 }
