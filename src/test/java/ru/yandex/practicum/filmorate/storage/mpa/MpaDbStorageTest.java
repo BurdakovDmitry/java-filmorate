@@ -25,12 +25,12 @@ class MpaDbStorageTest {
 	public void getMpa() {
 		List<Mpa> mpaList = mpaStorage.getMpa();
 
-        assertThat(mpaList)
-                .isNotEmpty()
-                .hasSize(5)
-                .extracting(Mpa::getName)
-                .containsExactly("G", "PG", "PG-13", "R", "NC-17");
-    }
+		assertThat(mpaList)
+			.isNotEmpty()
+			.hasSize(5)
+			.extracting(Mpa::getName)
+			.containsExactly("G", "PG", "PG-13", "R", "NC-17");
+	}
 
 	@Test
 	public void getMpaById() {

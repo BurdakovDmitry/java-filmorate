@@ -22,28 +22,28 @@ import java.util.Set;
 @Slf4j
 @Component
 public class Validation {
-    private final UserStorage userStorage;
-    private final FilmStorage filmStorage;
-    private final ReviewStorage reviewStorage;
-    private final MpaStorage mpaStorage;
-    private final GenreStorage genreStorage;
+	private static final int MAX_SIZE_DESCRIPTION = 200;
+	private static final LocalDate MINIMUM_RELEASE_DATE = LocalDate.of(1895, 12, 28);
+	private final UserStorage userStorage;
+	private final FilmStorage filmStorage;
+	private final ReviewStorage reviewStorage;
+	private final MpaStorage mpaStorage;
+	private final GenreStorage genreStorage;
 	private final DirectorStorage directorStorage;
-    private static final int MAX_SIZE_DESCRIPTION = 200;
-    private static final LocalDate MINIMUM_RELEASE_DATE = LocalDate.of(1895, 12, 28);
 
-    public Validation(@Qualifier("userDbStorage") UserStorage userStorage,
-                      @Qualifier("filmDbStorage") FilmStorage filmStorage,
-                      MpaStorage mpaStorage,
-                      GenreStorage genreStorage,
+	public Validation(@Qualifier("userDbStorage") UserStorage userStorage,
+					  @Qualifier("filmDbStorage") FilmStorage filmStorage,
+					  MpaStorage mpaStorage,
+					  GenreStorage genreStorage,
 					  DirectorStorage directorStorage,
-                      ReviewStorage reviewStorage) {
-        this.userStorage = userStorage;
-        this.filmStorage = filmStorage;
-        this.mpaStorage = mpaStorage;
-        this.genreStorage = genreStorage;
+					  ReviewStorage reviewStorage) {
+		this.userStorage = userStorage;
+		this.filmStorage = filmStorage;
+		this.mpaStorage = mpaStorage;
+		this.genreStorage = genreStorage;
 		this.directorStorage = directorStorage;
-        this.reviewStorage = reviewStorage;
-    }
+		this.reviewStorage = reviewStorage;
+	}
 
 	public void userById(Long id) {
 		if (userStorage.getUserById(id).isEmpty()) {
@@ -52,19 +52,19 @@ public class Validation {
 		}
 	}
 
-    public void reviewById(Long id) {
-        if (reviewStorage.getReview(id).isEmpty()) {
-            log.warn("Отзыв с id = {} в базе данных не найден", id);
-            throw new NotFoundException("Отзыв с id = " + id + " не найден");
-        }
-    }
+	public void reviewById(Long id) {
+		if (reviewStorage.getReview(id).isEmpty()) {
+			log.warn("Отзыв с id = {} в базе данных не найден", id);
+			throw new NotFoundException("Отзыв с id = " + id + " не найден");
+		}
+	}
 
-    public void filmById(Long id) {
-        if (filmStorage.getFilmById(id).isEmpty()) {
-            log.warn("Фильм с id = {} в базе данных не найден", id);
-            throw new NotFoundException("Фильм с id = " + id + " не найден");
-        }
-    }
+	public void filmById(Long id) {
+		if (filmStorage.getFilmById(id).isEmpty()) {
+			log.warn("Фильм с id = {} в базе данных не найден", id);
+			throw new NotFoundException("Фильм с id = " + id + " не найден");
+		}
+	}
 
 	public void mpaById(Integer id) {
 		if (mpaStorage.getMpaById(id).isEmpty()) {
@@ -156,26 +156,21 @@ public class Validation {
 			throw new ValidationException("Дата не может быть раньше 28.12.1895 года");
 		}
 
-        if (film.getDuration() < 0) {
-            log.warn("Валидация по duration не пройдена для {}", film);
-            throw new ValidationException("Продолжительность фильма не может быть отрицательным");
-        }
-    }
-
-    public void validateFilmYear(Integer year) {
-        int currentYear = LocalDate.now().getYear();
-        if (year < MINIMUM_RELEASE_DATE.getYear()) {
-            log.warn("Год {} меньше минимально допустимого {}", year, MINIMUM_RELEASE_DATE.getYear());
-            throw new ValidationException("Год выпуска фильма не может быть раньше " + MINIMUM_RELEASE_DATE.getYear());
-        }
-        if (year > currentYear) {
-            log.warn("Год {} больше текущего {}", year, currentYear);
-            throw new ValidationException("Год выпуска фильма не может быть позже " + currentYear);
-        }
-    }
 		if (film.getDuration() < 0) {
 			log.warn("Валидация по duration не пройдена для {}", film);
 			throw new ValidationException("Продолжительность фильма не может быть отрицательным");
+		}
+	}
+
+	public void validateFilmYear(Integer year) {
+		int currentYear = LocalDate.now().getYear();
+		if (year < MINIMUM_RELEASE_DATE.getYear()) {
+			log.warn("Год {} меньше минимально допустимого {}", year, MINIMUM_RELEASE_DATE.getYear());
+			throw new ValidationException("Год выпуска фильма не может быть раньше " + MINIMUM_RELEASE_DATE.getYear());
+		}
+		if (year > currentYear) {
+			log.warn("Год {} больше текущего {}", year, currentYear);
+			throw new ValidationException("Год выпуска фильма не может быть позже " + currentYear);
 		}
 	}
 
@@ -197,4 +192,5 @@ public class Validation {
 			}
 		}
 	}
+}
 

@@ -9,41 +9,41 @@ import ru.yandex.practicum.filmorate.validation.Validation;
 @Slf4j
 @Service
 public class ReviewLikeService {
-    private final ReviewLikeStorage reviewLikeStorage;
-    private final Validation validation;
+	private final ReviewLikeStorage reviewLikeStorage;
+	private final Validation validation;
 
-    @Autowired
-    public ReviewLikeService(Validation validation,
-                             ReviewLikeStorage reviewLikeStorage) {
-        this.validation = validation;
-        this.reviewLikeStorage = reviewLikeStorage;
-    }
+	@Autowired
+	public ReviewLikeService(Validation validation,
+							 ReviewLikeStorage reviewLikeStorage) {
+		this.validation = validation;
+		this.reviewLikeStorage = reviewLikeStorage;
+	}
 
-    public void like(Long reviewId, Long userId) {
-        validation.reviewById(reviewId);
-        validation.userById(userId);
+	public void like(Long reviewId, Long userId) {
+		validation.reviewById(reviewId);
+		validation.userById(userId);
 
-        reviewLikeStorage.like(reviewId, userId, true);
-    }
+		reviewLikeStorage.like(reviewId, userId, true);
+	}
 
-    public void disLike(Long reviewId, Long userId) {
-        validation.reviewById(reviewId);
-        validation.userById(userId);
+	public void disLike(Long reviewId, Long userId) {
+		validation.reviewById(reviewId);
+		validation.userById(userId);
 
-        reviewLikeStorage.like(reviewId, userId, false);
-    }
+		reviewLikeStorage.like(reviewId, userId, false);
+	}
 
-    public void removeLike(Long reviewId, Long userId) {
-        validation.reviewById(reviewId);
-        validation.userById(userId);
+	public void removeLike(Long reviewId, Long userId) {
+		validation.reviewById(reviewId);
+		validation.userById(userId);
 
-        reviewLikeStorage.removeLike(reviewId, userId, true);
-    }
+		reviewLikeStorage.removeLike(reviewId, userId, true);
+	}
 
-    public void removeDisLike(Long reviewId, Long userId) {
-        validation.reviewById(reviewId);
-        validation.userById(userId);
+	public void removeDisLike(Long reviewId, Long userId) {
+		validation.reviewById(reviewId);
+		validation.userById(userId);
 
-        reviewLikeStorage.removeLike(reviewId, userId, false);
-    }
+		reviewLikeStorage.removeLike(reviewId, userId, false);
+	}
 }

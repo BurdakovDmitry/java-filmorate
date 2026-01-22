@@ -76,15 +76,15 @@ public class InMemoryFilmStorage implements FilmStorage {
 		return Optional.ofNullable(films.get(filmId));
 	}
 
-    @Override
-    public List<Film> getPopularFilms(int count, Integer genreId, Integer year) {
-        return List.of();
-    }
+	@Override
+	public List<Film> getPopularFilms(int count, Integer genreId, Integer year) {
+		return List.of();
+	}
 
-    @Override
-    public List<Film> getCommonFilms(Long userId, Long friendId) {
-        return List.of();
-    }
+	@Override
+	public List<Film> getCommonFilms(Long userId, Long friendId) {
+		return List.of();
+	}
 
 	@Override
 	public List<Film> getFilmsByDirector(Long directorId) {
