@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
+import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
@@ -20,6 +21,7 @@ import java.time.LocalDate;
 public class Validation {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final ReviewStorage reviewStorage;
     private final MpaStorage mpaStorage;
     private final GenreStorage genreStorage;
     private static final int MAX_SIZE_DESCRIPTION = 200;
@@ -28,17 +30,26 @@ public class Validation {
     public Validation(@Qualifier("userDbStorage") UserStorage userStorage,
                       @Qualifier("filmDbStorage") FilmStorage filmStorage,
                       MpaStorage mpaStorage,
-                      GenreStorage genreStorage) {
+                      GenreStorage genreStorage,
+                      ReviewStorage reviewStorage) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
         this.mpaStorage = mpaStorage;
         this.genreStorage = genreStorage;
+        this.reviewStorage = reviewStorage;
     }
 
     public void userById(Long id) {
         if (userStorage.getUserById(id).isEmpty()) {
             log.warn("Пользователь с id = {} в базе данных не найден", id);
             throw new NotFoundException("Пользователь с id = " + id + " не найден");
+        }
+    }
+
+    public void reviewById(Long id) {
+        if (reviewStorage.getReview(id).isEmpty()) {
+            log.warn("Отзыв с id = {} в базе данных не найден", id);
+            throw new NotFoundException("Отзыв с id = " + id + " не найден");
         }
     }
 
