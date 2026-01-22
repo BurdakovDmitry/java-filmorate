@@ -5,13 +5,16 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.BaseRepository;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public class FilmDbStorage extends BaseRepository implements FilmStorage {
     private final RowMapper<Film> mapper;
+    private final GenreStorage genreStorage;
     private static final String FIND_ALL_QUERY =
             "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name " +
             "FROM films AS f " +
@@ -31,7 +34,7 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
             "LEFT JOIN film_mpa AS fm ON f.mpa_id = fm.mpa_id " +
             "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
             "GROUP BY f.film_id, fm.mpa_name " +
-            "ORDER BY COUNT(l.user_id) DESC " +
+            "ORDER BY COUNT(DISTINCT l.user_id) DESC " +
             "LIMIT ?";
 
     private static final String FIND_COMMON_QUERY =
@@ -44,9 +47,10 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
                     "WHERE l1.user_id = ? AND l2.user_id = ?) " +
             "ORDER BY (SELECT COUNT(*) FROM likes l WHERE l.film_id = f.film_id) DESC";
 
-    public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper) {
+    public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper, GenreStorage genreStorage) {
         super(jdbc);
         this.mapper = mapper;
+        this.genreStorage = genreStorage;
     }
 
     @Override
@@ -88,8 +92,40 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopularFilms(int count) {
-        return jdbc.query(FIND_POPULAR_QUERY, mapper, count);
+    public List<Film> getPopularFilms(int count, Integer genreId, Integer year) {
+        List<Object> params = new ArrayList<>();
+        if (genreId == null && year == null) {
+            return jdbc.query(FIND_POPULAR_QUERY, mapper, count);
+        }
+
+        StringBuilder queryBuilder = new StringBuilder(
+            "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name " +
+            "FROM films AS f " +
+            "LEFT JOIN film_mpa AS fm ON f.mpa_id = fm.mpa_id " +
+            "LEFT JOIN likes AS l ON f.film_id = l.film_id "
+        );
+        if (genreId != null) {
+            queryBuilder.append(" INNER JOIN film_genre AS fg ON f.film_id = fg.film_id ");
+        }
+
+        queryBuilder.append(" WHERE 1=1 ");
+        if (genreId != null) {
+            queryBuilder.append(" AND fg.genre_id = ? ");
+            params.add(genreId);
+        }
+
+        if (year != null) {
+            queryBuilder.append(" AND EXTRACT(YEAR FROM f.release_date) = ? ");
+            params.add(year);
+        }
+
+        queryBuilder.append(" GROUP BY f.film_id, fm.mpa_name ");
+        queryBuilder.append(" ORDER BY COUNT(l.user_id) DESC ");
+        queryBuilder.append(" LIMIT ? ");
+        params.add(count);
+
+        List<Film> films = jdbc.query(queryBuilder.toString(), mapper, params.toArray());
+        return films;
     }
 
     @Override

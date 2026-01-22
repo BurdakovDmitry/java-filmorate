@@ -14,7 +14,11 @@ public interface FilmStorage {
 
     Optional<Film> getFilmById(Long id);
 
-    List<Film> getPopularFilms(int count);
-
     List<Film> getCommonFilms(Long userId, Long friendId);
+
+    default List<Film> getPopularFilms(int count) {
+        return getPopularFilms(count, null, null);
+    }
+
+    List<Film> getPopularFilms(int count, Integer genreId, Integer year);
 }

@@ -129,12 +129,26 @@ public class FilmService {
         log.info("Пользователь c id = {} удалил лайк у фильма c id = {}", userId, filmId);
     }
 
-    public List<FilmDto> getPopularFilms(int count) {
-        List<Film> films = filmStorage.getPopularFilms(count);
+    public List<FilmDto> getPopularFilms(int count, Integer genreId, Integer year) {
+        if (genreId != null) {
+            validation.genreById(genreId);
+        }
 
+        if (year != null) {
+            validation.validateFilmYear(year);
+        }
+
+        List<Film> films = filmStorage.getPopularFilms(count, genreId, year);
         genreStorage.getGenresForFilms(films);
 
         log.info("Получен список из {} самых популярных фильмов по количеству лайков", count);
+        if (genreId != null) {
+            log.info("Фильтрация по жанру с id = {}", genreId);
+        }
+        if (year != null) {
+            log.info("Фильтрация по году = {}", year);
+        }
+
         return films.stream()
                 .map(filmMapper::mapToFilmDto)
                 .toList();
