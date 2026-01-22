@@ -3,11 +3,14 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.OperationType;
 import ru.yandex.practicum.filmorate.model.review.Review;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
 import ru.yandex.practicum.filmorate.validation.Validation;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.List;
 
 @Slf4j
@@ -15,12 +18,15 @@ import java.util.List;
 public class ReviewService {
     private final ReviewStorage reviewStorage;
     private final Validation validation;
+    private final EventService eventService;
 
 
     public ReviewService(Validation validation,
-                         ReviewStorage reviewStorage) {
+                         ReviewStorage reviewStorage,
+                         EventService eventService) {
         this.validation = validation;
         this.reviewStorage = reviewStorage;
+        this.eventService = eventService;
     }
 
     public Review createReview(Review review) {
@@ -31,7 +37,16 @@ public class ReviewService {
         }
         validation.filmById(review.getFilmId());
         validation.userById(review.getUserId());
-        return reviewStorage.createReview(review);
+        review = reviewStorage.createReview(review);
+
+        var event = new Event();
+        event.setEventType(EventType.REVIEW);
+        event.setOperation(OperationType.ADD);
+        event.setUserId(review.getUserId());
+        event.setTimestamp(Instant.now());
+        event.setEntityId(review.getId());
+        eventService.send(event);
+        return review;
     }
 
     public Review getReview(Long reviewId) {
@@ -43,12 +58,27 @@ public class ReviewService {
     public void deleteReview(Long id) {
         validation.reviewById(id);
 
+        var userId = getReview(id).getUserId();
         reviewStorage.deleteReview(id);
+        var event = new Event();
+        event.setEventType(EventType.REVIEW);
+        event.setOperation(OperationType.REMOVE);
+        event.setUserId(userId);
+        event.setTimestamp(Instant.now());
+        event.setEntityId(id);
+        eventService.send(event);
     }
 
     public Review updateReview(Review review) {
-        review.setCreatedAt(LocalDate.now());
-        return reviewStorage.updateReview(review);
+        review = reviewStorage.updateReview(review);
+        var event = new Event();
+        event.setEventType(EventType.REVIEW);
+        event.setOperation(OperationType.UPDATE);
+        event.setUserId(review.getUserId());
+        event.setTimestamp(Instant.now());
+        event.setEntityId(review.getId());
+        eventService.send(event);
+        return review;
     }
 
     public List<Review> getReviewsByFilmId(Long filmId, int limit) {

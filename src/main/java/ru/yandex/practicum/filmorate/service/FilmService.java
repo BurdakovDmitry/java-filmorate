@@ -8,13 +8,13 @@ import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
 import ru.yandex.practicum.filmorate.validation.Validation;
 
+import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -26,17 +26,21 @@ public class FilmService {
     private final GenreStorage genreStorage;
     private final Validation validation;
     private final FilmMapper filmMapper;
+    private final EventService eventService;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
                        LikeStorage likeStorage,
                        GenreStorage genreStorage,
-                       Validation validation, FilmMapper filmMapper) {
+                       Validation validation,
+                       FilmMapper filmMapper,
+                       EventService eventService) {
         this.filmStorage = filmStorage;
         this.likeStorage = likeStorage;
         this.genreStorage = genreStorage;
         this.validation = validation;
         this.filmMapper = filmMapper;
+        this.eventService = eventService;
     }
 
     public List<FilmDto> findAll() {
@@ -118,6 +122,13 @@ public class FilmService {
         validation.userById(userId);
 
         likeStorage.addLike(filmId, userId);
+        var event = new Event();
+        event.setEventType(EventType.LIKE);
+        event.setOperation(OperationType.ADD);
+        event.setUserId(userId);
+        event.setTimestamp(Instant.now());
+        event.setEntityId(filmId);
+        eventService.send(event);
         log.info("Пользователь c id = {} поставил лайк фильму c id = {}", userId, filmId);
     }
 
@@ -126,6 +137,13 @@ public class FilmService {
         validation.userById(userId);
 
         likeStorage.deleteLike(filmId, userId);
+        var event = new Event();
+        event.setEventType(EventType.LIKE);
+        event.setOperation(OperationType.REMOVE);
+        event.setUserId(userId);
+        event.setTimestamp(Instant.now());
+        event.setEntityId(filmId);
+        eventService.send(event);
         log.info("Пользователь c id = {} удалил лайк у фильма c id = {}", userId, filmId);
     }
 

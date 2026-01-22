@@ -7,12 +7,12 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
-import ru.yandex.practicum.filmorate.model.Friend;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.friend.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.validation.Validation;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,17 +21,21 @@ import java.util.Optional;
 public class UserService {
     private final UserStorage userStorage;
     private final FriendStorage friendStorage;
+    private final EventService eventService;
     private final Validation validation;
     private final UserMapper userMapper;
 
     @Autowired
     public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
                        FriendStorage friendStorage,
-                       Validation validation, UserMapper userMapper) {
+                       Validation validation,
+                       UserMapper userMapper,
+                       EventService eventService) {
         this.userStorage = userStorage;
         this.friendStorage = friendStorage;
         this.validation = validation;
         this.userMapper = userMapper;
+        this.eventService = eventService;
     }
 
     public List<UserDto> findAll() {
@@ -79,6 +83,13 @@ public class UserService {
         validation.userById(friendId);
 
         friendStorage.addFriends(userId, friendId, true);
+        var event = new Event();
+        event.setEventType(EventType.FRIEND);
+        event.setOperation(OperationType.ADD);
+        event.setUserId(userId);
+        event.setTimestamp(Instant.now());
+        event.setEntityId(friendId);
+        eventService.send(event);
         log.info("Пользователь с id: {} добавил к себе друга с id: {}", userId, friendId);
     }
 
@@ -87,6 +98,13 @@ public class UserService {
         validation.userById(friendId);
 
         friendStorage.deleteFriends(userId, friendId);
+        var event = new Event();
+        event.setEventType(EventType.FRIEND);
+        event.setOperation(OperationType.REMOVE);
+        event.setUserId(userId);
+        event.setTimestamp(Instant.now());
+        event.setEntityId(friendId);
+        eventService.send(event);
         log.info("Пользователь с id: {} удалил из друзей пользователя с id: {}", userId, friendId);
     }
 
