@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.director;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -22,6 +21,7 @@ import java.util.stream.Collectors;
 @Repository
 @Slf4j
 public class DirectorDbStorage extends BaseRepository implements DirectorStorage {
+
 	private static final String CREATE_DIRECTOR =
 		"INSERT INTO directors (name) VALUES (?)";
 	private static final String FIND_ALL_QUERY =
@@ -73,11 +73,7 @@ public class DirectorDbStorage extends BaseRepository implements DirectorStorage
 
 	@Override
 	public Optional<Director> getDirectorById(Long id) {
-		try {
-			return jdbc.query(FIND_BY_ID_QUERY, directorRowMapper, id).stream().findFirst();
-		} catch (EmptyResultDataAccessException e) {
-			return Optional.empty();
-		}
+		return jdbc.query(FIND_BY_ID_QUERY, directorRowMapper, id).stream().findFirst();
 	}
 
 	@Override
@@ -161,12 +157,13 @@ public class DirectorDbStorage extends BaseRepository implements DirectorStorage
 		}, rs -> {
 			Long filmId = rs.getLong("film_id");
 			Long directorId = rs.getLong("director_id");
-			String name = rs.getString("name");
 
 			if (rs.wasNull()) {
 				log.warn("Получен NULL для director_id в результате запроса");
 				return;
 			}
+
+			String name = rs.getString("name");
 
 			Director director = new Director(directorId, name);
 			directorsByFilmId

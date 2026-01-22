@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -15,7 +16,11 @@ import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
 import ru.yandex.practicum.filmorate.validation.Validation;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -149,11 +154,26 @@ public class FilmService {
 		log.info("Пользователь c id = {} удалил лайк у фильма c id = {}", userId, filmId);
 	}
 
-	public List<FilmDto> getPopularFilms(int count) {
-		List<Film> films = filmStorage.getPopularFilms(count);
+	public List<FilmDto> getPopularFilms(int count, Integer genreId, Integer year) {
+		if (genreId != null) {
+			validation.genreById(genreId);
+		}
+
+		if (year != null) {
+			validation.validateFilmYear(year);
+		}
+
+		List<Film> films = filmStorage.getPopularFilms(count, genreId, year);
 		genreStorage.getGenresForFilms(films);
 		directorStorage.getDirectorsForFilms(films);
 		log.info("Получен список из {} самых популярных фильмов по количеству лайков", count);
+		if (genreId != null) {
+			log.info("Фильтрация по жанру с id = {}", genreId);
+		}
+		if (year != null) {
+			log.info("Фильтрация по году = {}", year);
+		}
+
 		return films.stream()
 			.map(filmMapper::mapToFilmDto)
 			.toList();
@@ -178,6 +198,27 @@ public class FilmService {
 		return films.stream()
 			.map(filmMapper::mapToFilmDto)
 			.collect(Collectors.toList());
+	}
+
+	public List<FilmDto> getCommonFilms(Long userId, Long friendId) {
+
+		if (userId.equals(friendId)) {
+			log.warn("Запрошены общие фильмы с самим собой для userId = {}", userId);
+			throw new DuplicatedDataException("ID пользователя и друга не могут совпадать");
+		}
+
+		validation.userById(userId);
+		validation.userById(friendId);
+
+		List<Film> films = filmStorage.getCommonFilms(userId, friendId);
+
+		genreStorage.getGenresForFilms(films);
+
+		log.info("Получен список общих фильмов друзей, отсортированных по количеству лайков");
+
+		return films.stream()
+			.map(filmMapper::mapToFilmDto)
+			.toList();
 	}
 
 	public List<FilmDto> searchFilms(String query, String by) {
