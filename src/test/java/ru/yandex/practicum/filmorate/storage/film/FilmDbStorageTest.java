@@ -35,6 +35,7 @@ class FilmDbStorageTest {
     private final FilmDbStorage filmStorage;
     private final UserDbStorage userStorage;
     private final LikeDbStorage likeStorage;
+    private final GenreDbStorage genreStorage;
     Film film;
 
     @BeforeEach
@@ -119,7 +120,7 @@ class FilmDbStorageTest {
     @Test
     void getPopularFilmsByYear() {
         User user = new User("user@email.ru", "Login", "Name", LocalDate.of(1995, 12, 12));
-        User user2 = new User("REDACTED__N2__", "Login2", "Name2", LocalDate.of(1990, 5, 15));
+        User user2 = new User("user2@email.ru", "Login2", "Name2", LocalDate.of(1990, 5, 15));
 
         Film film2020 = new Film("Film 2020", "Description 2020", LocalDate.of(2020, 1, 1), 100, null);
         Film film2021 = new Film("Film 2021", "Description 2021", LocalDate.of(2021, 1, 1), 120, null);
@@ -147,8 +148,8 @@ class FilmDbStorageTest {
 
     @Test
     void getPopularFilmsByGenreAndYear() {
-        User user = new User("user@email.ru", "Login", "Name", LocalDate.of(1995, 12, 12));
-        User user2 = new User("REDACTED__N2__", "Login2", "Name2", LocalDate.of(1990, 5, 15));
+        User user = new User("user3@email.ru", "Login", "Name", LocalDate.of(1995, 12, 12));
+        User user2 = new User("user4@email.ru", "Login2", "Name2", LocalDate.of(1990, 5, 15));
 
         Genre comedyGenres = new Genre(1, "Комедия");
         Genre dramaGenres = new Genre(2, "Драма");
@@ -160,14 +161,18 @@ class FilmDbStorageTest {
         userStorage.createUser(user);
         userStorage.createUser(user2);
 
-        filmStorage.createFilm(comedyFilm);
-        filmStorage.createFilm(dramaFilm);
-        filmStorage.createFilm(anotherComedy);
+        Film createdComedy = filmStorage.createFilm(comedyFilm);
+        Film createdDrama = filmStorage.createFilm(dramaFilm);
+        Film createdAnotherComedy = filmStorage.createFilm(anotherComedy);
 
-        likeStorage.addLike(comedyFilm.getId(), user.getId());
-        likeStorage.addLike(comedyFilm.getId(), user2.getId());
-        likeStorage.addLike(dramaFilm.getId(), user.getId());
-        likeStorage.addLike(anotherComedy.getId(), user.getId());
+        genreStorage.addGenres(createdComedy.getId(), Set.of(comedyGenres));
+        genreStorage.addGenres(createdDrama.getId(), Set.of(dramaGenres));
+        genreStorage.addGenres(createdAnotherComedy.getId(), Set.of(comedyGenres));
+
+        likeStorage.addLike(createdComedy.getId(), user.getId());
+        likeStorage.addLike(createdComedy.getId(), user2.getId());
+        likeStorage.addLike(createdDrama.getId(), user.getId());
+        likeStorage.addLike(createdAnotherComedy.getId(), user.getId());
 
         List<Film> comedyFilms = filmStorage.getPopularFilms(10, 1, null);
 

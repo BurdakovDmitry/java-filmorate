@@ -134,6 +134,10 @@ public class FilmService {
             validation.genreById(genreId);
         }
 
+        if (year != null) {
+            validation.validateFilmYear(year);
+        }
+
         List<Film> films = filmStorage.getPopularFilms(count, genreId, year);
         genreStorage.getGenresForFilms(films);
 

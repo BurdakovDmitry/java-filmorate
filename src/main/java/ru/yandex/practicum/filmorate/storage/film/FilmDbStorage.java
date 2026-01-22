@@ -34,7 +34,7 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
             "LEFT JOIN film_mpa AS fm ON f.mpa_id = fm.mpa_id " +
             "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
             "GROUP BY f.film_id, fm.mpa_name " +
-            "ORDER BY COUNT(l.user_id) DESC " +
+            "ORDER BY COUNT(DISTINCT l.user_id) DESC " +
             "LIMIT ?";
 
     private static final String FIND_COMMON_QUERY =
@@ -47,7 +47,7 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
                     "WHERE l1.user_id = ? AND l2.user_id = ?) " +
             "ORDER BY (SELECT COUNT(*) FROM likes l WHERE l.film_id = f.film_id) DESC";
 
-    public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper) {
+    public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper, GenreStorage genreStorage) {
         super(jdbc);
         this.mapper = mapper;
         this.genreStorage = genreStorage;
@@ -55,9 +55,7 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
 
     @Override
     public List<Film> findAll() {
-        List<Film> films = jdbc.query(FIND_ALL_QUERY, mapper);
-        genreStorage.getGenresForFilms(films);
-        return films;
+        return jdbc.query(FIND_ALL_QUERY, mapper);
     }
 
     @Override
@@ -76,11 +74,6 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
         );
 
         film.setId(id);
-
-        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            genreStorage.addGenres(id, film.getGenres());
-        }
-
         return film;
     }
 
@@ -102,9 +95,7 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
     public List<Film> getPopularFilms(int count, Integer genreId, Integer year) {
         List<Object> params = new ArrayList<>();
         if (genreId == null && year == null) {
-            List<Film> films = jdbc.query(FIND_POPULAR_QUERY, mapper, count);
-            genreStorage.getGenresForFilms(films);
-            return films;
+            return jdbc.query(FIND_POPULAR_QUERY, mapper, count);
         }
 
         StringBuilder queryBuilder = new StringBuilder(

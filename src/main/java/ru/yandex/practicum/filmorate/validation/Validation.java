@@ -144,4 +144,11 @@ public class Validation {
             throw new ValidationException("Продолжительность фильма не может быть отрицательным");
         }
     }
+
+    public void validateFilmYear(Integer year) {
+        if (year < MINIMUM_RELEASE_DATE.getYear()) {
+            log.warn("Год {} меньше минимально допустимого {}", year, MINIMUM_RELEASE_DATE.getYear());
+            throw new ValidationException("Год выпуска фильма не может быть раньше " + MINIMUM_RELEASE_DATE.getYear());
+        }
+    }
 }
