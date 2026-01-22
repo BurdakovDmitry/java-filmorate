@@ -125,7 +125,6 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
         params.add(count);
 
         List<Film> films = jdbc.query(queryBuilder.toString(), mapper, params.toArray());
-        genreStorage.getGenresForFilms(films);
         return films;
     }
 
