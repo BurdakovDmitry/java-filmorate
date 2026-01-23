@@ -21,104 +21,104 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class UserDbStorageTest {
-    private final UserDbStorage userStorage;
-    private User user;
+	private final UserDbStorage userStorage;
+	private User user;
 
-    @BeforeEach
-    public void createData() {
-        user = new User("user@email.ru", "Login", "Name",
-                LocalDate.of(1995, 12, 12));
-        userStorage.createUser(user);
-    }
+	@BeforeEach
+	public void createData() {
+		user = new User("user@email.ru", "Login", "Name",
+			LocalDate.of(1995, 12, 12));
+		userStorage.createUser(user);
+	}
 
-    @Test
-    void createUser() {
-        assertThat(user)
-                .isNotNull()
-                .satisfies(userBase -> assertThat(userBase.getId()).isPositive());
-    }
+	@Test
+	void createUser() {
+		assertThat(user)
+			.isNotNull()
+			.satisfies(userBase -> assertThat(userBase.getId()).isPositive());
+	}
 
-    @Test
-    void findAll() {
-        List<User> users = userStorage.findAll();
+	@Test
+	void findAll() {
+		List<User> users = userStorage.findAll();
 
-        assertThat(users)
-                .isNotEmpty()
-                .hasSize(1)
-                .extracting(User::getEmail)
-                .contains("user@email.ru");
-    }
+		assertThat(users)
+			.isNotEmpty()
+			.hasSize(1)
+			.extracting(User::getEmail)
+			.contains("user@email.ru");
+	}
 
-    @Test
-    void updateUser() {
-        user.setName("newName");
-        userStorage.updateUser(user);
+	@Test
+	void updateUser() {
+		user.setName("newName");
+		userStorage.updateUser(user);
 
-        Optional<User> updateUserOptional = userStorage.getUserById(user.getId());
+		Optional<User> updateUserOptional = userStorage.getUserById(user.getId());
 
-        assertThat(updateUserOptional)
-                .isPresent()
-                .hasValueSatisfying(userBase -> {
-                    assertThat(userBase.getId()).isEqualTo(user.getId());
-                    assertThat(userBase.getName()).isEqualTo("newName");
-                });
-    }
+		assertThat(updateUserOptional)
+			.isPresent()
+			.hasValueSatisfying(userBase -> {
+				assertThat(userBase.getId()).isEqualTo(user.getId());
+				assertThat(userBase.getName()).isEqualTo("newName");
+			});
+	}
 
-    @Test
-    void getUserById() {
-        Optional<User> userOptional = userStorage.getUserById(user.getId());
+	@Test
+	void getUserById() {
+		Optional<User> userOptional = userStorage.getUserById(user.getId());
 
-        assertThat(userOptional)
-                .isPresent()
-                .hasValueSatisfying(userBase -> {
-                    assertThat(userBase.getId()).isEqualTo(user.getId());
-                    assertThat(userBase.getName()).isEqualTo("Name");
-                });
-    }
+		assertThat(userOptional)
+			.isPresent()
+			.hasValueSatisfying(userBase -> {
+				assertThat(userBase.getId()).isEqualTo(user.getId());
+				assertThat(userBase.getName()).isEqualTo("Name");
+			});
+	}
 
-    @Test
-    void getUserByEmail() {
-        Optional<User> userOptional = userStorage.getUserByEmail(user.getEmail());
+	@Test
+	void getUserByEmail() {
+		Optional<User> userOptional = userStorage.getUserByEmail(user.getEmail());
 
-        assertThat(userOptional)
-                .isPresent()
-                .hasValueSatisfying(userBase -> {
-                    assertThat(userBase.getId()).isEqualTo(user.getId());
-                    assertThat(userBase.getName()).isEqualTo("Name");
-                });
-    }
+		assertThat(userOptional)
+			.isPresent()
+			.hasValueSatisfying(userBase -> {
+				assertThat(userBase.getId()).isEqualTo(user.getId());
+				assertThat(userBase.getName()).isEqualTo("Name");
+			});
+	}
 
-    @Test
-    void getUserByLogin() {
-        Optional<User> userOptional = userStorage.getUserByLogin(user.getLogin());
+	@Test
+	void getUserByLogin() {
+		Optional<User> userOptional = userStorage.getUserByLogin(user.getLogin());
 
-        assertThat(userOptional)
-                .isPresent()
-                .hasValueSatisfying(userBase -> {
-                    assertThat(userBase.getId()).isEqualTo(user.getId());
-                    assertThat(userBase.getName()).isEqualTo("Name");
-                });
-    }
+		assertThat(userOptional)
+			.isPresent()
+			.hasValueSatisfying(userBase -> {
+				assertThat(userBase.getId()).isEqualTo(user.getId());
+				assertThat(userBase.getName()).isEqualTo("Name");
+			});
+	}
 
-    @Test
-    public void getUserUnknownId() {
-        Optional<User> userOptional = userStorage.getUserById(100L);
+	@Test
+	public void getUserUnknownId() {
+		Optional<User> userOptional = userStorage.getUserById(100L);
 
-        assertThat(userOptional).isEmpty();
-    }
+		assertThat(userOptional).isEmpty();
+	}
 
-    @Test
-    public void getUserUnknownEmail() {
-        Optional<User> userOptional = userStorage.getUserByEmail("email@email");
+	@Test
+	public void getUserUnknownEmail() {
+		Optional<User> userOptional = userStorage.getUserByEmail("email@email");
 
-        assertThat(userOptional).isEmpty();
-    }
+		assertThat(userOptional).isEmpty();
+	}
 
-    @Test
-    public void getUserUnknownLogin() {
-        Optional<User> userOptional = userStorage.getUserByLogin("Unknown");
+	@Test
+	public void getUserUnknownLogin() {
+		Optional<User> userOptional = userStorage.getUserByLogin("Unknown");
 
-        assertThat(userOptional).isEmpty();
+		assertThat(userOptional).isEmpty();
     }
 
     @Test
