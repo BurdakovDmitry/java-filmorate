@@ -72,14 +72,14 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
 		ORDER BY COUNT(DISTINCT l.user_id) DESC, f.release_date
 		""";
 	private static final String SEARCH_BY_TITLE = """
-		SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name
-		FROM films AS f
-		LEFT JOIN film_mpa AS fm ON f.mpa_id = fm.mpa_id
-		LEFT JOIN likes AS l ON f.film_id = l.film_id
-		WHERE LOWER(f.name) LIKE ?
-		GROUP BY f.film_id, fm.mpa_name
-		ORDER BY COUNT(l.user_id) DESC, f.name ASC
-		""";
+    SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name
+    FROM films AS f
+    LEFT JOIN film_mpa AS fm ON f.mpa_id = fm.mpa_id
+    LEFT JOIN likes AS l ON f.film_id = l.film_id
+    WHERE LOWER(f.name) LIKE ?
+    GROUP BY f.film_id, fm.mpa_name
+    ORDER BY COUNT(DISTINCT l.user_id) DESC, f.name ASC
+    """;
 	private static final String SEARCH_BY_DIRECTOR_ID = """
 		SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name
 		FROM films AS f
