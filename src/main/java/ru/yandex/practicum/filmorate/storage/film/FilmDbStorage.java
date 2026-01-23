@@ -25,6 +25,8 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
             "INSERT INTO films (name, description, release_date, duration, mpa_id) VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY =
             "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, mpa_id = ? WHERE film_id = ?";
+    private static final String DELETE_QUERY =
+            "DELETE FROM films WHERE film_id = ?";
     private static final String FIND_POPULAR_QUERY =
             "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name " +
             "FROM films AS f " +
@@ -85,6 +87,11 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
         );
 
         return film;
+    }
+
+    @Override
+    public void deleteFilm(Long filmId) {
+        update(DELETE_QUERY, filmId);
     }
 
     @Override

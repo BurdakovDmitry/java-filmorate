@@ -113,6 +113,13 @@ public class FilmService {
         return filmMapper.mapToFilmDto(updateFilm);
     }
 
+    public void deleteFilm(Long filmId) {
+        validation.filmById(filmId);
+
+        filmStorage.deleteFilm(filmId);
+        log.info("Фильм с id = {} успешно удален", filmId);
+    }
+
     public void addLike(Long filmId, Long userId) {
         validation.filmById(filmId);
         validation.userById(userId);
@@ -136,8 +143,8 @@ public class FilmService {
 
         log.info("Получен список из {} самых популярных фильмов по количеству лайков", count);
         return films.stream()
-                .map(filmMapper::mapToFilmDto)
-                .toList();
+            .map(filmMapper::mapToFilmDto)
+            .toList();
     }
 
     public List<FilmDto> getCommonFilms(Long userId, Long friendId) {

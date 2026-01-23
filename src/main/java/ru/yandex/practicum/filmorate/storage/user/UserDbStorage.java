@@ -20,6 +20,8 @@ public class UserDbStorage extends BaseRepository implements UserStorage {
             "VALUES (?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? " +
             "WHERE user_id = ?";
+    private static final String DELETE_QUERY =
+        "DELETE FROM users WHERE user_id = ?";
 
     public UserDbStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc);
@@ -70,5 +72,10 @@ public class UserDbStorage extends BaseRepository implements UserStorage {
     @Override
     public Optional<User> getUserByLogin(String login) {
         return jdbc.query(FIND_BY_LOGIN_QUERY, mapper, login).stream().findFirst();
+    }
+
+    @Override
+    public void deleteUser(Long userId) {
+        update(DELETE_QUERY, userId);
     }
 }

@@ -74,6 +74,13 @@ public class UserService {
         return userMapper.mapToUserDto(updateUser);
     }
 
+    public void deleteUser(Long userId) {
+        validation.userById(userId);
+
+        userStorage.deleteUser(userId);
+        log.info("Пользователь с id = {} успешно удален", userId);
+    }
+
     public void addFriends(Long userId, Long friendId) {
         validation.userById(userId);
         validation.userById(friendId);

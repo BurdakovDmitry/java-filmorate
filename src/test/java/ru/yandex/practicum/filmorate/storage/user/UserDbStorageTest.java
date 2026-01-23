@@ -120,4 +120,16 @@ class UserDbStorageTest {
 
         assertThat(userOptional).isEmpty();
     }
+
+    @Test
+    void deleteUser() {
+        userStorage.deleteUser(user.getId());
+
+        Optional<User> deletedUserOptional = userStorage.getUserById(user.getId());
+
+        assertThat(deletedUserOptional).isEmpty();
+
+        List<User> remainingUsers = userStorage.findAll();
+        assertThat(remainingUsers).isEmpty();
+    }
 }

@@ -111,4 +111,16 @@ class FilmDbStorageTest {
                 .extracting(Film::getName)
                 .containsExactly("newName", "Name");
     }
+
+    @Test
+    void deleteFilm() {
+        filmStorage.deleteFilm(film.getId());
+
+        Optional<Film> deletedFilmOptional = filmStorage.getFilmById(film.getId());
+
+        assertThat(deletedFilmOptional).isEmpty();
+
+        List<Film> remainingFilms = filmStorage.findAll();
+        assertThat(remainingFilms).isEmpty();
+    }
 }
