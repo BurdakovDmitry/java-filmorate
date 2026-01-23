@@ -8,17 +8,17 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface GenreStorage {
-    Set<Genre> getGenre();
+	Set<Genre> getGenre();
 
-    Optional<Genre> getGenreById(Integer id);
+	Optional<Genre> getGenreById(Integer id);
 
-    void addGenres(Long filmId, Set<Genre> genres);
+	void addGenres(Long filmId, Set<Genre> genres);
 
-    void updateGenres(Long filmId, Set<Genre> genres);
+	void updateGenres(Long filmId, Set<Genre> genres);
 
-    void deleteGenres(Long filmId);
+	void deleteGenres(Long filmId);
 
-    Set<Genre> getGenresByFilm(Long filmId);
+	Set<Genre> getGenresByFilm(Long filmId);
 
-    void getGenresForFilms(List<Film> films);
+	void getGenresForFilms(List<Film> films);
 }

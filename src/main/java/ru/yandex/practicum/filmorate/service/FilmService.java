@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.OperationType;
 import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
@@ -21,6 +22,7 @@ import ru.yandex.practicum.filmorate.validation.Validation;
 import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -29,6 +31,7 @@ public class FilmService {
     private final LikeStorage likeStorage;
     private final GenreStorage genreStorage;
     private final Validation validation;
+    private final DirectorStorage directorStorage;
     private final FilmMapper filmMapper;
     private final EventService eventService;
 
@@ -37,6 +40,7 @@ public class FilmService {
                        LikeStorage likeStorage,
                        GenreStorage genreStorage,
                        Validation validation,
+                       DirectorStorage directorStorage,
                        FilmMapper filmMapper,
                        EventService eventService) {
         this.filmStorage = filmStorage;
@@ -45,6 +49,7 @@ public class FilmService {
         this.validation = validation;
         this.filmMapper = filmMapper;
         this.eventService = eventService;
+        this.directorStorage = directorStorage;
     }
 
     public List<FilmDto> findAll() {
@@ -82,6 +87,8 @@ public class FilmService {
                 validation.genreById(genre.getId());
             }
         }
+      
+        validation.validateDirectors(film.getDirectors());
 
         Film newFilm = filmStorage.createFilm(film);
         long filmId = newFilm.getId();
@@ -91,6 +98,13 @@ public class FilmService {
             newFilm.setGenres(new LinkedHashSet<>(film.getGenres()));
         } else {
             newFilm.setGenres(new LinkedHashSet<>());
+        }
+      
+        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+            directorStorage.updateFilmDirectors(filmId, film.getDirectors());
+            newFilm.setDirectors(new LinkedHashSet<>(film.getDirectors()));
+        } else {
+            newFilm.setDirectors(new LinkedHashSet<>());
         }
 
         log.info("Добавлен новый фильм: {}", newFilm);
@@ -106,6 +120,8 @@ public class FilmService {
                 validation.genreById(genre.getId());
             }
         }
+      
+        validation.validateDirectors(film.getDirectors());
 
         Film updateFilm = filmStorage.updateFilm(film);
         long filmId = film.getId();
@@ -115,6 +131,13 @@ public class FilmService {
             updateFilm.setGenres(new LinkedHashSet<>(film.getGenres()));
         } else {
             updateFilm.setGenres(new LinkedHashSet<>());
+        }
+      
+        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+            directorStorage.updateFilmDirectors(filmId, film.getDirectors());
+            updatedFilm.setDirectors(new LinkedHashSet<>(film.getDirectors()));
+        } else {
+            updatedFilm.setDirectors(new LinkedHashSet<>());
         }
 
         log.info("Обновлены данные фильма: {}", updateFilm);
@@ -152,6 +175,7 @@ public class FilmService {
 
         List<Film> films = filmStorage.getPopularFilms(count, genreId, year);
         genreStorage.getGenresForFilms(films);
+        directorStorage.getDirectorsForFilms(films);
 
         log.info("Получен список из {} самых популярных фильмов по количеству лайков", count);
         if (genreId != null) {
@@ -164,6 +188,27 @@ public class FilmService {
         return films.stream()
                 .map(filmMapper::mapToFilmDto)
                 .toList();
+    }
+  
+    public List<FilmDto> getFilmsByDirector(Long directorId, String sortBy) {
+        directorStorage.getDirectorById(directorId)
+            .orElseThrow(() -> new NotFoundException("Режиссёр с id = " + directorId + " не найден"));
+
+        List<Film> films;
+        if ("year".equals(sortBy)) {
+            films = filmStorage.getFilmsByDirectorSortedByYear(directorId);
+        } else if ("likes".equals(sortBy)) {
+            films = filmStorage.getFilmsByDirectorSortedByLikes(directorId);
+        } else {
+            films = filmStorage.getFilmsByDirector(directorId);
+        }
+
+        genreStorage.getGenresForFilms(films);
+        directorStorage.getDirectorsForFilms(films);
+
+        return films.stream()
+            .map(filmMapper::mapToFilmDto)
+            .collect(Collectors.toList());
     }
 
     public List<FilmDto> getCommonFilms(Long userId, Long friendId) {

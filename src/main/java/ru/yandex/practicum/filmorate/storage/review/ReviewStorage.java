@@ -8,15 +8,15 @@ import java.util.Optional;
 
 public interface ReviewStorage {
 
-    Review createReview(Review review);
+	Review createReview(Review review);
 
-    Optional<Review> getReview(Long reviewId);
+	Optional<Review> getReview(Long reviewId);
 
-    void deleteReview(Long id);
+	void deleteReview(Long id);
 
-    Review updateReview(Review review);
+	Review updateReview(Review review);
 
-    List<Review> getReviewsByFilmId(Long filmid, int limit);
+	List<Review> getReviewsByFilmId(Long filmid, int limit);
 
-    List<Review> getAllReviews(int limit);
+	List<Review> getAllReviews(int limit);
 }

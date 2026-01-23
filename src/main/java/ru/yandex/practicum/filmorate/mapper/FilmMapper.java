@@ -6,5 +6,5 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 @Mapper(componentModel = "spring")
 public interface FilmMapper {
-    FilmDto mapToFilmDto(Film film);
+	FilmDto mapToFilmDto(Film film);
 }
