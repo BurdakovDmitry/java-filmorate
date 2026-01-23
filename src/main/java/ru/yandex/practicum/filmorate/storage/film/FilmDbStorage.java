@@ -173,7 +173,7 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
 
 		queryBuilder.append(" WHERE 1=1 ");
 		if (genreId != null) {
-			queryBuilder.append(" AND fg.genre_id = ? ");
+			queryBuilder.append(" AND f.film_id IN (SELECT fg.film_id FROM film_genre fg WHERE fg.genre_id = ?) ");
 			params.add(genreId);
 		}
 

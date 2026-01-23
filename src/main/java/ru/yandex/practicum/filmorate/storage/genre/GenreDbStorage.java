@@ -77,7 +77,8 @@ public class GenreDbStorage implements GenreStorage {
 			"SELECT fg.film_id, g.genre_id, g.name " +
 				"FROM genre AS g " +
 				"JOIN film_genre AS fg ON g.genre_id = fg.genre_id " +
-				"WHERE fg.film_id IN (" + String.join(",", Collections.nCopies(filmIds.size(), "?")) + ")";
+				"WHERE fg.film_id IN (" + String.join(",", Collections.nCopies(filmIds.size(), "?")) + ")" +
+				"ORDER BY fg.film_id, fg.genre_id";
 
 		Map<Long, Set<Genre>> genresByFilmId = jdbc.query(fillAllForFilmsQuery, (ResultSet rs) -> {
 			Map<Long, Set<Genre>> result = new HashMap<>();
