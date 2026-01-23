@@ -140,6 +140,7 @@ public class FilmService {
         filmStorage.deleteFilm(filmId);
         log.info("Фильм с id = {} успешно удален", filmId);
     }
+
 	public void addLike(Long filmId, Long userId) {
 		validation.filmById(filmId);
 		validation.userById(userId);
