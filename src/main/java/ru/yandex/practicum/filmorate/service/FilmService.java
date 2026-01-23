@@ -8,11 +8,7 @@ import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Event;
-import ru.yandex.practicum.filmorate.model.OperationType;
-import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
@@ -87,7 +83,7 @@ public class FilmService {
                 validation.genreById(genre.getId());
             }
         }
-      
+
         validation.validateDirectors(film.getDirectors());
 
         Film newFilm = filmStorage.createFilm(film);
@@ -99,7 +95,7 @@ public class FilmService {
         } else {
             newFilm.setGenres(new LinkedHashSet<>());
         }
-      
+
         if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
             directorStorage.updateFilmDirectors(filmId, film.getDirectors());
             newFilm.setDirectors(new LinkedHashSet<>(film.getDirectors()));
@@ -120,7 +116,7 @@ public class FilmService {
                 validation.genreById(genre.getId());
             }
         }
-      
+
         validation.validateDirectors(film.getDirectors());
 
         Film updateFilm = filmStorage.updateFilm(film);
@@ -132,12 +128,12 @@ public class FilmService {
         } else {
             updateFilm.setGenres(new LinkedHashSet<>());
         }
-      
+
         if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
             directorStorage.updateFilmDirectors(filmId, film.getDirectors());
-            updatedFilm.setDirectors(new LinkedHashSet<>(film.getDirectors()));
+            updateFilm.setDirectors(new LinkedHashSet<>(film.getDirectors()));
         } else {
-            updatedFilm.setDirectors(new LinkedHashSet<>());
+            updateFilm.setDirectors(new LinkedHashSet<>());
         }
 
         log.info("Обновлены данные фильма: {}", updateFilm);
@@ -189,10 +185,10 @@ public class FilmService {
                 .map(filmMapper::mapToFilmDto)
                 .toList();
     }
-  
+
     public List<FilmDto> getFilmsByDirector(Long directorId, String sortBy) {
         directorStorage.getDirectorById(directorId)
-            .orElseThrow(() -> new NotFoundException("Режиссёр с id = " + directorId + " не найден"));
+                .orElseThrow(() -> new NotFoundException("Режиссёр с id = " + directorId + " не найден"));
 
         List<Film> films;
         if ("year".equals(sortBy)) {
@@ -207,8 +203,8 @@ public class FilmService {
         directorStorage.getDirectorsForFilms(films);
 
         return films.stream()
-            .map(filmMapper::mapToFilmDto)
-            .collect(Collectors.toList());
+                .map(filmMapper::mapToFilmDto)
+                .collect(Collectors.toList());
     }
 
     public List<FilmDto> getCommonFilms(Long userId, Long friendId) {
