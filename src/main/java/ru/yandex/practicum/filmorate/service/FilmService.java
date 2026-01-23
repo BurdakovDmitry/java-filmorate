@@ -8,7 +8,12 @@ import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.OperationType;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
@@ -16,8 +21,11 @@ import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
 import ru.yandex.practicum.filmorate.validation.Validation;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -227,4 +235,38 @@ public class FilmService {
                 .map(filmMapper::mapToFilmDto)
                 .toList();
     }
+
+	public List<FilmDto> searchFilms(String query, String by) {
+		List<String> searchFields = Arrays.stream(by.split(","))
+			.map(String::trim)
+			.filter(field -> !field.isEmpty())
+			.collect(Collectors.toList());
+
+		String title = searchFields.contains("title") ? query : null;
+		String director = searchFields.contains("director") ? query : null;
+
+		Set<Film> films = new LinkedHashSet<>();
+
+		if (title != null && !title.isBlank()) {
+			films.addAll(filmStorage.searchByTitle(title));
+		}
+
+		if (director != null && !director.isBlank()) {
+			List<Director> directors = directorStorage.findByNameContaining(director);
+			for (Director d : directors) {
+				Long directorId = d.getId();
+				if (directorId != null) {
+					films.addAll(filmStorage.searchByDirector(directorId));
+				}
+			}
+		}
+
+		List<Film> filmList = new ArrayList<>(films);
+		genreStorage.getGenresForFilms(filmList);
+		directorStorage.getDirectorsForFilms(filmList);
+
+		return filmList.stream()
+			.map(filmMapper::mapToFilmDto)
+			.collect(Collectors.toList());
+	}
 }

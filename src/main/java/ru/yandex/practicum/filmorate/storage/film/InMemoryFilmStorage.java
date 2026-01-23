@@ -101,6 +101,21 @@ public class InMemoryFilmStorage implements FilmStorage {
 		return List.of();
 	}
 
+	@Override
+	public List<Film> searchByTitle(String query) {
+		return List.of();
+	}
+
+	@Override
+	public List<Film> searchByDirector(Long directorId) {
+		return List.of();
+	}
+
+	@Override
+	public List<Film> searchByTitleAndDirector(String query, Long directorId) {
+		return List.of();
+	}
+
 	private long getNextId() {
 		if (films.isEmpty()) {
 			id = 1L;

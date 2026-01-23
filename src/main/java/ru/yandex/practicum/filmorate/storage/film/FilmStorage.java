@@ -20,6 +20,12 @@ public interface FilmStorage {
 
 	List<Film> getFilmsByDirectorSortedByLikes(Long directorId);
 
+	List<Film> searchByTitle(String query);
+
+	List<Film> searchByDirector(Long directorId);
+
+	List<Film> searchByTitleAndDirector(String query, Long directorId);
+
 	List<Film> getCommonFilms(Long userId, Long friendId);
 
 	default List<Film> getPopularFilms(int count) {
@@ -27,4 +33,5 @@ public interface FilmStorage {
 	}
 
 	List<Film> getPopularFilms(int count, Integer genreId, Integer year);
+
 }
