@@ -149,52 +149,52 @@ class FilmDbStorageTest {
 
 	@Test
 	void getPopularFilmsByGenreAndYear() {
-        User user = new User("user3@email.ru", "Login", "Name", LocalDate.of(1995, 12, 12));
-        User user2 = new User("user4@email.ru", "Login2", "Name2", LocalDate.of(1990, 5, 15));
+		User user = new User("user3@email.ru", "Login", "Name", LocalDate.of(1995, 12, 12));
+		User user2 = new User("user4@email.ru", "Login2", "Name2", LocalDate.of(1990, 5, 15));
 
-        Genre comedyGenres = new Genre(1, "Комедия");
-        Genre dramaGenres = new Genre(2, "Драма");
+		Genre comedyGenres = new Genre(1, "Комедия");
+		Genre dramaGenres = new Genre(2, "Драма");
 
-        Film comedyFilm =
-            new Film("Comedy Film", "Comedy Description", LocalDate.of(2020, 1, 1), 100, Set.of(comedyGenres));
-        Film dramaFilm =
-            new Film("Drama Film", "Drama Description", LocalDate.of(2020, 2, 1), 120, Set.of(dramaGenres));
-        Film anotherComedy = new Film("Another Comedy", "Another Comedy Description", LocalDate.of(2020, 3, 1), 90,
-            Set.of(comedyGenres));
+		Film comedyFilm =
+			new Film("Comedy Film", "Comedy Description", LocalDate.of(2020, 1, 1), 100, Set.of(comedyGenres));
+		Film dramaFilm =
+			new Film("Drama Film", "Drama Description", LocalDate.of(2020, 2, 1), 120, Set.of(dramaGenres));
+		Film anotherComedy = new Film("Another Comedy", "Another Comedy Description", LocalDate.of(2020, 3, 1), 90,
+			Set.of(comedyGenres));
 
-        userStorage.createUser(user);
-        userStorage.createUser(user2);
+		userStorage.createUser(user);
+		userStorage.createUser(user2);
 
-        Film createdComedy = filmStorage.createFilm(comedyFilm);
-        Film createdDrama = filmStorage.createFilm(dramaFilm);
-        Film createdAnotherComedy = filmStorage.createFilm(anotherComedy);
+		Film createdComedy = filmStorage.createFilm(comedyFilm);
+		Film createdDrama = filmStorage.createFilm(dramaFilm);
+		Film createdAnotherComedy = filmStorage.createFilm(anotherComedy);
 
-        genreStorage.addGenres(createdComedy.getId(), Set.of(comedyGenres));
-        genreStorage.addGenres(createdDrama.getId(), Set.of(dramaGenres));
-        genreStorage.addGenres(createdAnotherComedy.getId(), Set.of(comedyGenres));
+		genreStorage.addGenres(createdComedy.getId(), Set.of(comedyGenres));
+		genreStorage.addGenres(createdDrama.getId(), Set.of(dramaGenres));
+		genreStorage.addGenres(createdAnotherComedy.getId(), Set.of(comedyGenres));
 
-        likeStorage.addLike(createdComedy.getId(), user.getId());
-        likeStorage.addLike(createdComedy.getId(), user2.getId());
-        likeStorage.addLike(createdDrama.getId(), user.getId());
-        likeStorage.addLike(createdAnotherComedy.getId(), user.getId());
+		likeStorage.addLike(createdComedy.getId(), user.getId());
+		likeStorage.addLike(createdComedy.getId(), user2.getId());
+		likeStorage.addLike(createdDrama.getId(), user.getId());
+		likeStorage.addLike(createdAnotherComedy.getId(), user.getId());
 
-        List<Film> comedyFilms = filmStorage.getPopularFilms(10, 1, null);
+		List<Film> comedyFilms = filmStorage.getPopularFilms(10, 1, null);
 
-        assertThat(comedyFilms)
-            .hasSize(2)
-            .extracting(Film::getName)
-            .containsExactlyInAnyOrder("Comedy Film", "Another Comedy");
-    }
+		assertThat(comedyFilms)
+			.hasSize(2)
+			.extracting(Film::getName)
+			.containsExactlyInAnyOrder("Comedy Film", "Another Comedy");
+	}
 
-    @Test
-    void deleteFilm() {
-        filmStorage.deleteFilm(film.getId());
+	@Test
+	void deleteFilm() {
+		filmStorage.deleteFilm(film.getId());
 
-        Optional<Film> deletedFilmOptional = filmStorage.getFilmById(film.getId());
+		Optional<Film> deletedFilmOptional = filmStorage.getFilmById(film.getId());
 
-        assertThat(deletedFilmOptional).isEmpty();
+		assertThat(deletedFilmOptional).isEmpty();
 
-        List<Film> remainingFilms = filmStorage.findAll();
-        assertThat(remainingFilms).isEmpty();
-    }
+		List<Film> remainingFilms = filmStorage.findAll();
+		assertThat(remainingFilms).isEmpty();
+	}
 }
