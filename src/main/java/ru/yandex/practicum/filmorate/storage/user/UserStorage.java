@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface UserStorage {
@@ -16,7 +18,9 @@ public interface UserStorage {
 
 	Optional<User> getUserByEmail(String email);
 
-	Optional<User> getUserByLogin(String login);
+    Optional<User> getUserByLogin(String login);
 
-	void deleteUser(Long id);
+    List<Film> getRecommendations(Long id);
+
+    void deleteUser(Long id);
 }

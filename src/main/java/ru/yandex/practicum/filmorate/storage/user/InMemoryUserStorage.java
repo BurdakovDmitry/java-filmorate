@@ -4,10 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -114,6 +116,11 @@ public class InMemoryUserStorage implements UserStorage {
 	public Optional<User> getUserByLogin(String login) {
 		return Optional.empty();
 	}
+
+    @Override
+    public List<Film> getRecommendations(Long id) {
+        return List.of();
+    }
 
 	private long getNextId() {
 		if (users.isEmpty()) {

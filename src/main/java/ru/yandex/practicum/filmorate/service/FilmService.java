@@ -64,6 +64,7 @@ public class FilmService {
         }
 
         genreStorage.getGenresForFilms(films);
+        directorStorage.getDirectorsForFilms(films);
 
         log.info("Получен список фильмов: {}", films);
         return films.stream()
@@ -78,6 +79,7 @@ public class FilmService {
         });
 
         film.setGenres(genreStorage.getGenresByFilm(film.getId()));
+        film.setDirectors(directorStorage.getDirectorsByFilm(film.getId()));
 
         log.info("Получен фильм: {}", film);
         return filmMapper.mapToFilmDto(film);
@@ -235,6 +237,7 @@ public class FilmService {
         List<Film> films = filmStorage.getCommonFilms(userId, friendId);
 
         genreStorage.getGenresForFilms(films);
+        directorStorage.getDirectorsForFilms(films);
 
         log.info("Получен список общих фильмов друзей, отсортированных по количеству лайков");
 
@@ -247,7 +250,7 @@ public class FilmService {
 		List<String> searchFields = Arrays.stream(by.split(","))
 			.map(String::trim)
 			.filter(field -> !field.isEmpty())
-			.collect(Collectors.toList());
+			.toList();
 
 		String title = searchFields.contains("title") ? query : null;
 		String director = searchFields.contains("director") ? query : null;
