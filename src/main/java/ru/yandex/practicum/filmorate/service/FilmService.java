@@ -143,8 +143,8 @@ public class FilmService {
 
         log.info("Получен список из {} самых популярных фильмов по количеству лайков", count);
         return films.stream()
-            .map(filmMapper::mapToFilmDto)
-            .toList();
+                .map(filmMapper::mapToFilmDto)
+                .toList();
     }
 
     public List<FilmDto> getCommonFilms(Long userId, Long friendId) {
