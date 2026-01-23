@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -13,9 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-@Slf4j
 public class FilmDbStorage extends BaseRepository implements FilmStorage {
-
 	private static final String FIND_ALL_QUERY = """
 		SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name
 		FROM films AS f
@@ -36,6 +33,8 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
 		SET name = ?, description = ?, release_date = ?, duration = ?, mpa_id = ?
 		WHERE film_id = ?
 		""";
+    private static final String DELETE_QUERY =
+        "DELETE FROM films WHERE film_id = ?";
 	private static final String FIND_POPULAR_QUERY = """
 		SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name
 		FROM films AS f
@@ -74,18 +73,52 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
 		GROUP BY f.film_id, m.mpa_name
 		ORDER BY COUNT(DISTINCT l.user_id) DESC, f.release_date
 		""";
-	private static final String FIND_COMMON_QUERY =
-		"SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name " +
-			"FROM films AS f " +
-			"JOIN film_mpa AS fm ON f.mpa_id = fm.mpa_id " +
-			"WHERE f.film_id IN (SELECT l1.film_id " +
-			"FROM likes AS l1 " +
-			"JOIN likes AS l2 ON l1.film_id = l2.film_id " +
-			"WHERE l1.user_id = ? AND l2.user_id = ?) " +
-			"ORDER BY (SELECT COUNT(*) FROM likes l WHERE l.film_id = f.film_id) DESC";
+	private static final String SEARCH_BY_TITLE = """
+    SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name
+    FROM films AS f
+    LEFT JOIN film_mpa AS fm ON f.mpa_id = fm.mpa_id
+    LEFT JOIN likes AS l ON f.film_id = l.film_id
+    WHERE LOWER(f.name) LIKE ?
+    GROUP BY f.film_id, fm.mpa_name
+    ORDER BY COUNT(DISTINCT l.user_id) DESC, f.name ASC
+    """;
+	private static final String SEARCH_BY_DIRECTOR_ID = """
+		SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name
+		FROM films AS f
+		LEFT JOIN film_mpa AS fm ON f.mpa_id = fm.mpa_id
+		LEFT JOIN likes AS l ON f.film_id = l.film_id
+		WHERE f.film_id IN (
+		    SELECT fd.film_id FROM film_director fd WHERE fd.director_id = ?
+		)
+		GROUP BY f.film_id, fm.mpa_name
+		ORDER BY COUNT(l.user_id) DESC, f.name ASC
+		""";
+	private static final String SEARCH_BY_TITLE_AND_DIRECTOR = """
+		SELECT DISTINCT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name
+		FROM films AS f
+		LEFT JOIN film_mpa AS fm ON f.mpa_id = fm.mpa_id
+		LEFT JOIN likes AS l ON f.film_id = l.film_id
+		WHERE f.film_id IN (
+		    SELECT fd.film_id FROM film_director fd WHERE fd.director_id = ?
+		    )
+		AND LOWER(f.name) LIKE ?
+		GROUP BY f.film_id, fm.mpa_name
+		ORDER BY COUNT(l.user_id) DESC, f.name ASC
+		""";
+	private static final String FIND_COMMON_QUERY = """
+		SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name
+		FROM films AS f
+		JOIN film_mpa AS fm ON f.mpa_id = fm.mpa_id
+		WHERE f.film_id IN (
+		    SELECT l1.film_id
+		    FROM likes AS l1
+		    JOIN likes AS l2 ON l1.film_id = l2.film_id
+		    WHERE l1.user_id = ? AND l2.user_id = ?
+		)
+		ORDER BY (SELECT COUNT(*) FROM likes l WHERE l.film_id = f.film_id) DESC""";
+
 	private final RowMapper<Film> mapper;
 	private final GenreStorage genreStorage;
-
 
 	public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper, GenreStorage genreStorage) {
 		super(jdbc);
@@ -105,29 +138,23 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
 
 	@Override
 	public Film createFilm(Film film) {
-		long id = insert(INSERT_QUERY,
-			film.getName(),
-			film.getDescription(),
-			film.getReleaseDate(),
-			film.getDuration(),
-			(film.getMpa() != null) ? film.getMpa().getId() : null
-		);
+		long id = insert(INSERT_QUERY, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(),
+			(film.getMpa() != null) ? film.getMpa().getId() : null);
 		film.setId(id);
 		return film;
 	}
 
 	@Override
 	public Film updateFilm(Film film) {
-		update(UPDATE_QUERY,
-			film.getName(),
-			film.getDescription(),
-			film.getReleaseDate(),
-			film.getDuration(),
-			(film.getMpa() != null) ? film.getMpa().getId() : null,
-			film.getId()
-		);
+		update(UPDATE_QUERY, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(),
+			(film.getMpa() != null) ? film.getMpa().getId() : null, film.getId());
 		return film;
 	}
+
+    @Override
+    public void deleteFilm(Long filmId) {
+        update(DELETE_QUERY, filmId);
+    }
 
 	@Override
 	public List<Film> getPopularFilms(int count, Integer genreId, Integer year) {
@@ -138,10 +165,8 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
 
 		StringBuilder queryBuilder = new StringBuilder(
 			"SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name " +
-				"FROM films AS f " +
-				"LEFT JOIN film_mpa AS fm ON f.mpa_id = fm.mpa_id " +
-				"LEFT JOIN likes AS l ON f.film_id = l.film_id "
-		);
+				"FROM films AS f " + "LEFT JOIN film_mpa AS fm ON f.mpa_id = fm.mpa_id " +
+				"LEFT JOIN likes AS l ON f.film_id = l.film_id ");
 		if (genreId != null) {
 			queryBuilder.append(" INNER JOIN film_genre AS fg ON f.film_id = fg.film_id ");
 		}
@@ -185,5 +210,19 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
 	public List<Film> getFilmsByDirectorSortedByLikes(Long directorId) {
 		return jdbc.query(FIND_FILMS_BY_DIRECTOR_SORTED_BY_LIKES, mapper, directorId);
 	}
-}
 
+	@Override
+	public List<Film> searchByTitle(String query) {
+		return jdbc.query(SEARCH_BY_TITLE, mapper, "%" + query.toLowerCase() + "%");
+	}
+
+	@Override
+	public List<Film> searchByDirector(Long directorId) {
+		return jdbc.query(SEARCH_BY_DIRECTOR_ID, mapper, directorId);
+	}
+
+	@Override
+	public List<Film> searchByTitleAndDirector(String query, Long directorId) {
+		return jdbc.query(SEARCH_BY_TITLE_AND_DIRECTOR, mapper, directorId, "%" + query.toLowerCase() + "%");
+	}
+}

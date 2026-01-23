@@ -101,6 +101,21 @@ public class InMemoryFilmStorage implements FilmStorage {
 		return List.of();
 	}
 
+	@Override
+	public List<Film> searchByTitle(String query) {
+		return List.of();
+	}
+
+	@Override
+	public List<Film> searchByDirector(Long directorId) {
+		return List.of();
+	}
+
+	@Override
+	public List<Film> searchByTitleAndDirector(String query, Long directorId) {
+		return List.of();
+	}
+
 	private long getNextId() {
 		if (films.isEmpty()) {
 			id = 1L;
@@ -109,4 +124,15 @@ public class InMemoryFilmStorage implements FilmStorage {
 			return ++id;
 		}
 	}
+
+    @Override
+    public void deleteFilm(Long filmId) {
+        if (!films.containsKey(filmId)) {
+            log.error("Ошибка поиска фильма для удаления - {}", filmId);
+            throw new NotFoundException("Фильм с id = " + filmId + " не найден");
+        }
+
+        Film removedFilm = films.remove(filmId);
+        log.info("Фильм удален: {}", removedFilm);
+    }
 }

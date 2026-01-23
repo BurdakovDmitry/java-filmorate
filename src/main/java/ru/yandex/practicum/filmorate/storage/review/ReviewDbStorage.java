@@ -12,24 +12,24 @@ import java.util.Optional;
 
 @Repository
 public class ReviewDbStorage extends BaseRepository implements ReviewStorage {
-	private static final String INSERT_QUERY =
-		"INSERT INTO reviews (content, is_positive, user_id, film_id, useful, created_at) VALUES (?, ?, ?, ?, ?, ?)";
-	private static final String UPDATE_QUERY =
-		"UPDATE reviews SET content = ?, is_positive = ?, user_id = ?, film_id = ?, useful = ?, created_at = ? WHERE id = ?";
-	private static final String SELECT_QUERY =
-		"SELECT * FROM reviews WHERE id = ?";
-	private static final String DELETE_QUERY =
-		"DELETE FROM reviews WHERE id = ?";
-	private static final String FIND_BY_FILM_ID =
-		"SELECT id, content, is_positive, user_id, film_id, useful, created_at " +
-			"FROM reviews " +
-			"WHERE film_id = ? " +
-			"LIMIT ?";
-	private static final String FIND_All =
-		"SELECT id, content, is_positive, user_id, film_id, useful, created_at " +
-			"FROM reviews " +
-			"LIMIT ?";
-	private final RowMapper<Review> mapper;
+    private final RowMapper<Review> mapper;
+    private static final String INSERT_QUERY =
+            "INSERT INTO reviews (content, is_positive, user_id, film_id, useful, created_at) VALUES (?, ?, ?, ?, ?, ?)";
+    private static final String UPDATE_QUERY =
+            "UPDATE reviews SET content = ?, is_positive = ?, user_id = ?, film_id = ?, useful = ? WHERE id = ?";
+    private static final String SELECT_QUERY =
+            "SELECT * FROM reviews WHERE id = ?";
+    private static final String DELETE_QUERY =
+            "DELETE FROM reviews WHERE id = ?";
+    private static final String FIND_BY_FILM_ID =
+            "SELECT id, content, is_positive, user_id, film_id, useful, created_at " +
+            "FROM reviews " +
+            "WHERE film_id = ? " +
+            "LIMIT ?";
+    private static final String FIND_All =
+            "SELECT id, content, is_positive, user_id, film_id, useful, created_at " +
+            "FROM reviews " +
+            "LIMIT ?";
 
 	public ReviewDbStorage(JdbcTemplate jdbc, RowMapper<Review> mapper) {
 		super(jdbc);
@@ -66,16 +66,15 @@ public class ReviewDbStorage extends BaseRepository implements ReviewStorage {
 		super.update(DELETE_QUERY, id);
 	}
 
-	@Override
-	public Review updateReview(Review review) {
-		super.update(UPDATE_QUERY,
-			review.getContent(),
-			review.isPositive(),
-			review.getUserId(),
-			review.getFilmId(),
-			review.getUseful(),
-			review.getCreatedAt(),
-			review.getId());
+    @Override
+    public Review updateReview(Review review) {
+        super.update(UPDATE_QUERY,
+                review.getContent(),
+                review.isPositive(),
+                review.getUserId(),
+                review.getFilmId(),
+                review.getUseful(),
+                review.getId());
 
 		return review;
 	}

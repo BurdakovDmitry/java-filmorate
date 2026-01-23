@@ -8,17 +8,19 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserStorage {
-    Collection<User> findAll();
+	Collection<User> findAll();
 
-    User createUser(User user);
+	User createUser(User user);
 
-    User updateUser(User user);
+	User updateUser(User user);
 
-    Optional<User> getUserById(Long id);
+	Optional<User> getUserById(Long id);
 
-    Optional<User> getUserByEmail(String email);
+	Optional<User> getUserByEmail(String email);
 
     Optional<User> getUserByLogin(String login);
 
     List<Film> getRecommendations(Long id);
+
+    void deleteUser(Long id);
 }

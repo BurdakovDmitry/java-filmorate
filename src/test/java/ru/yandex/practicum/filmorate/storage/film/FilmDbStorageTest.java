@@ -185,4 +185,16 @@ class FilmDbStorageTest {
 			.extracting(Film::getName)
 			.containsExactlyInAnyOrder("Comedy Film", "Another Comedy");
 	}
+
+	@Test
+	void deleteFilm() {
+		filmStorage.deleteFilm(film.getId());
+
+		Optional<Film> deletedFilmOptional = filmStorage.getFilmById(film.getId());
+
+		assertThat(deletedFilmOptional).isEmpty();
+
+		List<Film> remainingFilms = filmStorage.findAll();
+		assertThat(remainingFilms).isEmpty();
+	}
 }

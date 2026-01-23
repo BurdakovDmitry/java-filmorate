@@ -22,6 +22,8 @@ public class UserDbStorage extends BaseRepository implements UserStorage {
             "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
     private static final String UPDATE_QUERY =
             "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE user_id = ?";
+    private static final String DELETE_QUERY =
+            "DELETE FROM users WHERE user_id = ?";
     private static final String FIND_RECOMMENDATIONS_QUERY = """
             SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name
             FROM films AS f
@@ -48,46 +50,46 @@ public class UserDbStorage extends BaseRepository implements UserStorage {
         this.filmMapper = filmMapper;
     }
 
-    @Override
-    public List<User> findAll() {
-        return jdbc.query(FIND_ALL_QUERY, mapper);
-    }
+	@Override
+	public List<User> findAll() {
+		return jdbc.query(FIND_ALL_QUERY, mapper);
+	}
 
-    @Override
-    public User createUser(User user) {
-        long id = insert(INSERT_QUERY,
-                user.getEmail(),
-                user.getLogin(),
-                user.getName(),
-                user.getBirthday()
-        );
+	@Override
+	public User createUser(User user) {
+		long id = insert(INSERT_QUERY,
+			user.getEmail(),
+			user.getLogin(),
+			user.getName(),
+			user.getBirthday()
+		);
 
-        user.setId(id);
-        return user;
-    }
+		user.setId(id);
+		return user;
+	}
 
-    @Override
-    public User updateUser(User user) {
-        update(UPDATE_QUERY,
-                user.getEmail(),
-                user.getLogin(),
-                user.getName(),
-                user.getBirthday(),
-                user.getId()
-        );
+	@Override
+	public User updateUser(User user) {
+		update(UPDATE_QUERY,
+			user.getEmail(),
+			user.getLogin(),
+			user.getName(),
+			user.getBirthday(),
+			user.getId()
+		);
 
-        return user;
-    }
+		return user;
+	}
 
-    @Override
-    public Optional<User> getUserById(Long id) {
-        return jdbc.query(FIND_BY_ID_QUERY, mapper, id).stream().findFirst();
-    }
+	@Override
+	public Optional<User> getUserById(Long id) {
+		return jdbc.query(FIND_BY_ID_QUERY, mapper, id).stream().findFirst();
+	}
 
-    @Override
-    public Optional<User> getUserByEmail(String email) {
-        return jdbc.query(FIND_BY_EMAIL_QUERY, mapper, email).stream().findFirst();
-    }
+	@Override
+	public Optional<User> getUserByEmail(String email) {
+		return jdbc.query(FIND_BY_EMAIL_QUERY, mapper, email).stream().findFirst();
+	}
 
     @Override
     public Optional<User> getUserByLogin(String login) {
@@ -97,5 +99,10 @@ public class UserDbStorage extends BaseRepository implements UserStorage {
     @Override
     public List<Film> getRecommendations(Long userId) {
         return jdbc.query(FIND_RECOMMENDATIONS_QUERY, filmMapper, userId, userId, userId);
+    }
+
+    @Override
+    public void deleteUser(Long userId) {
+        update(DELETE_QUERY, userId);
     }
 }

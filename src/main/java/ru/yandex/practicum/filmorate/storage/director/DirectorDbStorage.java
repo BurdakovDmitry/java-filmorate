@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 @Repository
 @Slf4j
 public class DirectorDbStorage extends BaseRepository implements DirectorStorage {
+
 	private static final String CREATE_DIRECTOR =
 		"INSERT INTO directors (name) VALUES (?)";
 	private static final String FIND_ALL_QUERY =
@@ -56,6 +57,8 @@ public class DirectorDbStorage extends BaseRepository implements DirectorStorage
 		WHERE fd.film_id IN (%s)
 		ORDER BY fd.film_id, d.director_id
 		""";
+
+	private static final String FIND_BY_NAME = "SELECT director_id, name FROM directors WHERE LOWER(name) LIKE ?";
 
 	private final DirectorRowMapper directorRowMapper = new DirectorRowMapper();
 
@@ -176,5 +179,17 @@ public class DirectorDbStorage extends BaseRepository implements DirectorStorage
 		}
 
 		log.info("Загружено режиссёров по фильмам: {}", directorsByFilmId);
+	}
+
+	@Override
+	public List<Director> findByNameContaining(String query) {
+		return jdbc.query(
+			FIND_BY_NAME,
+			(rs, rowNum) -> new Director(
+				rs.getLong("director_id"),
+				rs.getString("name")
+			),
+			"%" + query.toLowerCase() + "%"
+		);
 	}
 }

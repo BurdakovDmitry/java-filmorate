@@ -27,4 +27,6 @@ public interface DirectorStorage {
 	Set<Director> getDirectorsByFilm(Long filmId);
 
 	void getDirectorsForFilms(List<Film> films);
+
+	List<Director> findByNameContaining(String query);
 }
