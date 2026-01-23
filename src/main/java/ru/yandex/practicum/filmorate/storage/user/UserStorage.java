@@ -17,4 +17,6 @@ public interface UserStorage {
 	Optional<User> getUserByEmail(String email);
 
 	Optional<User> getUserByLogin(String login);
+
+	void deleteUser(Long id);
 }

@@ -148,6 +148,13 @@ public class FilmService {
         return filmMapper.mapToFilmDto(updateFilm);
     }
 
+    public void deleteFilm(Long filmId) {
+        validation.filmById(filmId);
+
+        filmStorage.deleteFilm(filmId);
+        log.info("Фильм с id = {} успешно удален", filmId);
+    }
+
     public void addLike(Long filmId, Long userId) {
         validation.filmById(filmId);
         validation.userById(userId);
