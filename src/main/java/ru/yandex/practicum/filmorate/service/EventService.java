@@ -19,9 +19,6 @@ public class EventService {
     }
 
     public List<Event> getByUserId(Long userId) {
-        if (userId == null) {
-            return storage.getEvents();
-        }
         return storage.getEvents(userId);
     }
 

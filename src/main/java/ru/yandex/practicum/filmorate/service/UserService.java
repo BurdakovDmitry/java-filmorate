@@ -83,12 +83,7 @@ public class UserService {
         validation.userById(friendId);
 
         friendStorage.addFriends(userId, friendId, true);
-        var event = new Event();
-        event.setEventType(EventType.FRIEND);
-        event.setOperation(OperationType.ADD);
-        event.setUserId(userId);
-        event.setTimestamp(Instant.now());
-        event.setEntityId(friendId);
+        var event = new Event(userId, friendId, EventType.FRIEND, OperationType.ADD, Instant.now());
         eventService.send(event);
         log.info("Пользователь с id: {} добавил к себе друга с id: {}", userId, friendId);
     }
@@ -98,12 +93,7 @@ public class UserService {
         validation.userById(friendId);
 
         friendStorage.deleteFriends(userId, friendId);
-        var event = new Event();
-        event.setEventType(EventType.FRIEND);
-        event.setOperation(OperationType.REMOVE);
-        event.setUserId(userId);
-        event.setTimestamp(Instant.now());
-        event.setEntityId(friendId);
+        var event = new Event(userId, friendId, EventType.FRIEND, OperationType.REMOVE, Instant.now());
         eventService.send(event);
         log.info("Пользователь с id: {} удалил из друзей пользователя с id: {}", userId, friendId);
     }

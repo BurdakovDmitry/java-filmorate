@@ -80,7 +80,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/feed")
-    public List<Event> getFeed(@PathVariable(required = false) Long id) {
+    public List<Event> getFeed(@PathVariable Long id) {
         return eventService.getByUserId(id);
     }
 }

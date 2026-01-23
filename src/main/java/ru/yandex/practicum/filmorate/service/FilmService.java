@@ -8,7 +8,11 @@ import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.OperationType;
+import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
@@ -122,12 +126,7 @@ public class FilmService {
         validation.userById(userId);
 
         likeStorage.addLike(filmId, userId);
-        var event = new Event();
-        event.setEventType(EventType.LIKE);
-        event.setOperation(OperationType.ADD);
-        event.setUserId(userId);
-        event.setTimestamp(Instant.now());
-        event.setEntityId(filmId);
+        var event = new Event(userId, filmId, EventType.LIKE, OperationType.ADD, Instant.now());
         eventService.send(event);
         log.info("Пользователь c id = {} поставил лайк фильму c id = {}", userId, filmId);
     }
@@ -137,12 +136,7 @@ public class FilmService {
         validation.userById(userId);
 
         likeStorage.deleteLike(filmId, userId);
-        var event = new Event();
-        event.setEventType(EventType.LIKE);
-        event.setOperation(OperationType.REMOVE);
-        event.setUserId(userId);
-        event.setTimestamp(Instant.now());
-        event.setEntityId(filmId);
+        var event = new Event(userId, filmId, EventType.LIKE, OperationType.REMOVE, Instant.now());
         eventService.send(event);
         log.info("Пользователь c id = {} удалил лайк у фильма c id = {}", userId, filmId);
     }
