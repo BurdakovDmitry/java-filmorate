@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.OperationType;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
@@ -25,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -132,19 +130,13 @@ public class FilmService {
         Film updateFilm = filmStorage.updateFilm(film);
         long filmId = film.getId();
 
-        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            genreStorage.updateGenres(filmId, film.getGenres());
-            updateFilm.setGenres(new LinkedHashSet<>(film.getGenres()));
-        } else {
-            updateFilm.setGenres(new LinkedHashSet<>());
-        }
+        genreStorage.updateGenres(filmId, film.getGenres() != null ? film.getGenres() : new LinkedHashSet<>());
+        updateFilm.setGenres(film.getGenres() != null ? new LinkedHashSet<>(film.getGenres()) : new LinkedHashSet<>());
 
-        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
-            directorStorage.updateFilmDirectors(filmId, film.getDirectors());
-            updateFilm.setDirectors(new LinkedHashSet<>(film.getDirectors()));
-        } else {
-            updateFilm.setDirectors(new LinkedHashSet<>());
-        }
+        directorStorage.updateFilmDirectors(filmId, film.getDirectors() != null ? film.getDirectors()
+                : new LinkedHashSet<>());
+        updateFilm.setDirectors(film.getDirectors() != null ? new LinkedHashSet<>(film.getDirectors())
+                : new LinkedHashSet<>());
 
         log.info("Обновлены данные фильма: {}", updateFilm);
         return filmMapper.mapToFilmDto(updateFilm);
@@ -247,35 +239,26 @@ public class FilmService {
     }
 
 	public List<FilmDto> searchFilms(String query, String by) {
-		List<String> searchFields = Arrays.stream(by.split(","))
-			.map(String::trim)
-			.filter(field -> !field.isEmpty())
-			.toList();
+		List<String> searchFields = Arrays.asList(by.split(","));
 
-		String title = searchFields.contains("title") ? query : null;
-		String director = searchFields.contains("director") ? query : null;
+		List<Film> films = new ArrayList<>();
 
-		Set<Film> films = new LinkedHashSet<>();
+        if (searchFields.contains("title") && searchFields.contains("director")) {
+            films = filmStorage.searchByTitleAndDirector(query);
+        } else if (searchFields.contains("title")) {
+			films = filmStorage.searchByTitle(query);
+		} else if (searchFields.contains("director")) {
+            films = filmStorage.searchByDirector(query);
+        }
 
-		if (title != null && !title.isBlank()) {
-			films.addAll(filmStorage.searchByTitle(title));
-		}
+        if (films == null || films.isEmpty()) {
+            return List.of();
+        }
 
-		if (director != null && !director.isBlank()) {
-			List<Director> directors = directorStorage.findByNameContaining(director);
-			for (Director d : directors) {
-				Long directorId = d.getId();
-				if (directorId != null) {
-					films.addAll(filmStorage.searchByDirector(directorId));
-				}
-			}
-		}
+		genreStorage.getGenresForFilms(films);
+		directorStorage.getDirectorsForFilms(films);
 
-		List<Film> filmList = new ArrayList<>(films);
-		genreStorage.getGenresForFilms(filmList);
-		directorStorage.getDirectorsForFilms(filmList);
-
-		return filmList.stream()
+		return films.stream()
 			.map(filmMapper::mapToFilmDto)
 			.collect(Collectors.toList());
 	}

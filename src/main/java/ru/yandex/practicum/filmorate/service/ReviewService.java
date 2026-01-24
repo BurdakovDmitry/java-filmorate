@@ -30,8 +30,7 @@ public class ReviewService {
     }
 
     public Review createReview(Review review) {
-        if (review.getFilmId() == null
-        || review.getUserId() == null) {
+        if (review.getFilmId() == null || review.getUserId() == null) {
             throw new ValidationException("Failed to create review when filmId is " + review.getFilmId() +
                     " userId is " + review.getUserId());
         }
@@ -70,7 +69,16 @@ public class ReviewService {
     }
 
     public Review updateReview(Review review) {
+        validation.reviewById(review.getId());
+
+        Review lastReview = getReview(review.getId());
+
+        review.setUserId(lastReview.getUserId());
+        review.setFilmId(lastReview.getFilmId());
+        review.setUseful(lastReview.getUseful());
+
         review = reviewStorage.updateReview(review);
+
         var event = new Event();
         event.setEventType(EventType.REVIEW);
         event.setOperation(OperationType.UPDATE);
@@ -82,10 +90,12 @@ public class ReviewService {
     }
 
     public List<Review> getReviewsByFilmId(Long filmId, int limit) {
-        validation.filmById(filmId);
         if (filmId == null) {
             return reviewStorage.getAllReviews(limit);
         }
+
+        validation.filmById(filmId);
+
         return reviewStorage.getReviewsByFilmId(filmId, limit);
     }
 }

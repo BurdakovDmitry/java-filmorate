@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.storage.review;
 
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -22,13 +21,15 @@ public class ReviewDbStorage extends BaseRepository implements ReviewStorage {
     private static final String DELETE_QUERY =
             "DELETE FROM reviews WHERE id = ?";
     private static final String FIND_BY_FILM_ID =
-            "SELECT id, content, is_positive, user_id, film_id, useful, created_at " +
+			"SELECT id, content, is_positive, user_id, film_id, useful, created_at " +
             "FROM reviews " +
             "WHERE film_id = ? " +
+			"ORDER BY useful DESC " +
             "LIMIT ?";
     private static final String FIND_All =
-            "SELECT id, content, is_positive, user_id, film_id, useful, created_at " +
+			"SELECT id, content, is_positive, user_id, film_id, useful, created_at " +
             "FROM reviews " +
+			"ORDER BY useful DESC " +
             "LIMIT ?";
 
 	public ReviewDbStorage(JdbcTemplate jdbc, RowMapper<Review> mapper) {
@@ -53,12 +54,7 @@ public class ReviewDbStorage extends BaseRepository implements ReviewStorage {
 
 	@Override
 	public Optional<Review> getReview(Long reviewId) {
-		List<Review> results = jdbc.query(
-			SELECT_QUERY,
-			new BeanPropertyRowMapper<>(Review.class),
-			reviewId
-		);
-		return results.stream().findFirst();
+		return jdbc.query(SELECT_QUERY, mapper, reviewId).stream().findFirst();
 	}
 
 	@Override
@@ -76,12 +72,12 @@ public class ReviewDbStorage extends BaseRepository implements ReviewStorage {
                 review.getUseful(),
                 review.getId());
 
-		return review;
+		return getReview(review.getId()).get();
 	}
 
 	@Override
-	public List<Review> getReviewsByFilmId(Long filmid, int limit) {
-		return jdbc.query(FIND_BY_FILM_ID, mapper, filmid, limit);
+	public List<Review> getReviewsByFilmId(Long filmId, int limit) {
+		return jdbc.query(FIND_BY_FILM_ID, mapper, filmId, limit);
 	}
 
 	@Override

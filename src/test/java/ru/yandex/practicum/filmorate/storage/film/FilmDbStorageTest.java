@@ -41,7 +41,7 @@ class FilmDbStorageTest {
 	@BeforeEach
 	public void createData() {
 		film = new Film("Name", "Description",
-			LocalDate.of(1995, 12, 12), 12, null);
+			LocalDate.of(1995, 12, 12), 12);
 		filmStorage.createFilm(film);
 	}
 
@@ -102,7 +102,7 @@ class FilmDbStorageTest {
 		User user = new User("user@email.ru", "Login", "Name",
 			LocalDate.of(1995, 12, 12));
 		Film newFilm = new Film("newName", "newDescription",
-			LocalDate.of(2005, 12, 21), 120, null);
+			LocalDate.of(2005, 12, 21), 120);
 
 		userStorage.createUser(user);
 		filmStorage.createFilm(newFilm);
@@ -122,10 +122,10 @@ class FilmDbStorageTest {
 		User user = new User("user@email.ru", "Login", "Name", LocalDate.of(1995, 12, 12));
 		User user2 = new User("user2@email.ru", "Login2", "Name2", LocalDate.of(1990, 5, 15));
 
-		Film film2020 = new Film("Film 2020", "Description 2020", LocalDate.of(2020, 1, 1), 100, null);
-		Film film2021 = new Film("Film 2021", "Description 2021", LocalDate.of(2021, 1, 1), 120, null);
+		Film film2020 = new Film("Film 2020", "Description 2020", LocalDate.of(2020, 1, 1), 100);
+		Film film2021 = new Film("Film 2021", "Description 2021", LocalDate.of(2021, 1, 1), 120);
 		Film anotherFilm2020 =
-			new Film("Another Film 2020", "Another Description 2020", LocalDate.of(2020, 6, 1), 90, null);
+			new Film("Another Film 2020", "Another Description 2020", LocalDate.of(2020, 6, 1), 90);
 
 		userStorage.createUser(user);
 		userStorage.createUser(user2);
@@ -156,11 +156,14 @@ class FilmDbStorageTest {
 		Genre dramaGenres = new Genre(2, "Драма");
 
 		Film comedyFilm =
-			new Film("Comedy Film", "Comedy Description", LocalDate.of(2020, 1, 1), 100, Set.of(comedyGenres));
+			new Film("Comedy Film", "Comedy Description", LocalDate.of(2020, 1, 1), 100);
 		Film dramaFilm =
-			new Film("Drama Film", "Drama Description", LocalDate.of(2020, 2, 1), 120, Set.of(dramaGenres));
-		Film anotherComedy = new Film("Another Comedy", "Another Comedy Description", LocalDate.of(2020, 3, 1), 90,
-			Set.of(comedyGenres));
+			new Film("Drama Film", "Drama Description", LocalDate.of(2020, 2, 1), 120);
+		Film anotherComedy = new Film("Another Comedy", "Another Comedy Description", LocalDate.of(2020, 3, 1), 90);
+
+		comedyFilm.setGenres(Set.of(comedyGenres));
+		dramaFilm.setGenres(Set.of(dramaGenres));
+		anotherComedy.setGenres(Set.of(comedyGenres));
 
 		userStorage.createUser(user);
 		userStorage.createUser(user2);

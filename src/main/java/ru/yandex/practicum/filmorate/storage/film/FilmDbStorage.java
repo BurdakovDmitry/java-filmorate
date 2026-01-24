@@ -5,7 +5,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.BaseRepository;
-import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,39 +70,38 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
 		LEFT JOIN likes l ON f.film_id = l.film_id
 		WHERE d.director_id = ?
 		GROUP BY f.film_id, m.mpa_name
-		ORDER BY COUNT(DISTINCT l.user_id) DESC, f.release_date
+		ORDER BY COUNT(DISTINCT l.user_id) DESC, f.film_id ASC
 		""";
 	private static final String SEARCH_BY_TITLE = """
-    SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name
-    FROM films AS f
-    LEFT JOIN film_mpa AS fm ON f.mpa_id = fm.mpa_id
-    LEFT JOIN likes AS l ON f.film_id = l.film_id
-    WHERE LOWER(f.name) LIKE ?
-    GROUP BY f.film_id, fm.mpa_name
-    ORDER BY COUNT(DISTINCT l.user_id) DESC, f.name ASC
+    	SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name
+    	FROM films AS f
+    	LEFT JOIN film_mpa AS fm ON f.mpa_id = fm.mpa_id
+    	LEFT JOIN likes AS l ON f.film_id = l.film_id
+    	WHERE LOWER(f.name) LIKE ?
+    	GROUP BY f.film_id, fm.mpa_name
+    	ORDER BY COUNT(DISTINCT l.user_id) DESC, f.film_id DESC
     """;
-	private static final String SEARCH_BY_DIRECTOR_ID = """
+	private static final String SEARCH_BY_DIRECTOR_NAME = """
 		SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name
 		FROM films AS f
 		LEFT JOIN film_mpa AS fm ON f.mpa_id = fm.mpa_id
+		JOIN film_director AS fd ON f.film_id = fd.film_id
+		JOIN directors AS d ON fd.director_id = d.director_id
 		LEFT JOIN likes AS l ON f.film_id = l.film_id
-		WHERE f.film_id IN (
-		    SELECT fd.film_id FROM film_director fd WHERE fd.director_id = ?
-		)
+		WHERE LOWER(d.name) LIKE ?
 		GROUP BY f.film_id, fm.mpa_name
-		ORDER BY COUNT(l.user_id) DESC, f.name ASC
+		ORDER BY COUNT(DISTINCT l.user_id) DESC, f.film_id DESC
 		""";
 	private static final String SEARCH_BY_TITLE_AND_DIRECTOR = """
-		SELECT DISTINCT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name
+		SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name
 		FROM films AS f
 		LEFT JOIN film_mpa AS fm ON f.mpa_id = fm.mpa_id
+		LEFT JOIN film_director AS fd ON f.film_id = fd.film_id
+		LEFT JOIN directors AS d ON fd.director_id = d.director_id
 		LEFT JOIN likes AS l ON f.film_id = l.film_id
-		WHERE f.film_id IN (
-		    SELECT fd.film_id FROM film_director fd WHERE fd.director_id = ?
-		    )
-		AND LOWER(f.name) LIKE ?
+		WHERE LOWER(f.name) LIKE ? OR LOWER(d.name) LIKE ?
 		GROUP BY f.film_id, fm.mpa_name
-		ORDER BY COUNT(l.user_id) DESC, f.name ASC
+		ORDER BY COUNT(DISTINCT l.user_id) DESC, f.film_id DESC
 		""";
 	private static final String FIND_COMMON_QUERY = """
 		SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, fm.mpa_name
@@ -118,13 +116,11 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
 		ORDER BY (SELECT COUNT(*) FROM likes l WHERE l.film_id = f.film_id) DESC""";
 
 	private final RowMapper<Film> mapper;
-	private final GenreStorage genreStorage;
 
-	public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper, GenreStorage genreStorage) {
+    public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper) {
 		super(jdbc);
 		this.mapper = mapper;
-		this.genreStorage = genreStorage;
-	}
+    }
 
 	@Override
 	public List<Film> findAll() {
@@ -187,8 +183,7 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
 		queryBuilder.append(" LIMIT ? ");
 		params.add(count);
 
-		List<Film> films = jdbc.query(queryBuilder.toString(), mapper, params.toArray());
-		return films;
+        return jdbc.query(queryBuilder.toString(), mapper, params.toArray());
 	}
 
 	@Override
@@ -217,12 +212,13 @@ public class FilmDbStorage extends BaseRepository implements FilmStorage {
 	}
 
 	@Override
-	public List<Film> searchByDirector(Long directorId) {
-		return jdbc.query(SEARCH_BY_DIRECTOR_ID, mapper, directorId);
+	public List<Film> searchByDirector(String query) {
+		return jdbc.query(SEARCH_BY_DIRECTOR_NAME, mapper, "%" + query.toLowerCase() + "%");
 	}
 
 	@Override
-	public List<Film> searchByTitleAndDirector(String query, Long directorId) {
-		return jdbc.query(SEARCH_BY_TITLE_AND_DIRECTOR, mapper, directorId, "%" + query.toLowerCase() + "%");
+	public List<Film> searchByTitleAndDirector(String query) {
+		String pattern = "%" + query.toLowerCase() + "%";
+		return jdbc.query(SEARCH_BY_TITLE_AND_DIRECTOR, mapper, pattern, pattern);
 	}
 }

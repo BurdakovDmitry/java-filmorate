@@ -107,12 +107,12 @@ public class InMemoryFilmStorage implements FilmStorage {
 	}
 
 	@Override
-	public List<Film> searchByDirector(Long directorId) {
+	public List<Film> searchByDirector(String query) {
 		return List.of();
 	}
 
 	@Override
-	public List<Film> searchByTitleAndDirector(String query, Long directorId) {
+	public List<Film> searchByTitleAndDirector(String query) {
 		return List.of();
 	}
 

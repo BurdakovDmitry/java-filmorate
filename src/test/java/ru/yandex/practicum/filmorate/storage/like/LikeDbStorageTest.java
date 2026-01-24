@@ -40,7 +40,7 @@ class LikeDbStorageTest {
 	@BeforeEach
 	public void createData() {
 		Film film = new Film("Name", "Description",
-			LocalDate.of(1995, 12, 12), 125, null);
+			LocalDate.of(1995, 12, 12), 125);
 		User user = new User("user@email.ru", "Login", "Name",
 			LocalDate.of(1995, 12, 12));
 

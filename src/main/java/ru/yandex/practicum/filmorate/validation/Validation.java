@@ -174,6 +174,13 @@ public class Validation {
 		}
 	}
 
+	public void validateDirector(Director director) {
+		if (director.getName() == null || director.getName().isEmpty() || director.getName().isBlank()) {
+			log.warn("Валидация по полю name не пройдена для {}", director);
+			throw new ValidationException("Попытка присвоить пустое значение имени режиссера");
+		}
+	}
+
 	public void validateDirectors(Set<Director> directors) {
 		if (directors == null || directors.isEmpty()) {
 			return;

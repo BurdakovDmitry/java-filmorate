@@ -9,14 +9,13 @@ import ru.yandex.practicum.filmorate.storage.BaseRepository;
 import ru.yandex.practicum.filmorate.storage.mappers.DirectorRowMapper;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Repository
 @Slf4j
@@ -139,14 +138,14 @@ public class DirectorDbStorage extends BaseRepository implements DirectorStorage
 		List<Long> filmIds = films.stream()
 			.map(Film::getId)
 			.filter(Objects::nonNull)
-			.collect(Collectors.toList());
+			.toList();
 
 		if (filmIds.isEmpty()) return;
 
 		String placeholders = String.join(", ", Collections.nCopies(filmIds.size(), "?"));
 		String sql = String.format(FIND_DIRECTORS_BY_FILM_IDS, placeholders);
 
-		Map<Long, Set<Director>> directorsByFilmId = new HashMap<>();
+		Map<Long, Set<Director>> directorsByFilmId = new LinkedHashMap<>();
 
 		jdbc.query(connection -> {
 			var ps = connection.prepareStatement(sql);
@@ -184,12 +183,9 @@ public class DirectorDbStorage extends BaseRepository implements DirectorStorage
 	@Override
 	public List<Director> findByNameContaining(String query) {
 		return jdbc.query(
-			FIND_BY_NAME,
-			(rs, rowNum) -> new Director(
-				rs.getLong("director_id"),
-				rs.getString("name")
-			),
-			"%" + query.toLowerCase() + "%"
+				FIND_BY_NAME,
+				directorRowMapper,
+				"%" + query.toLowerCase() + "%"
 		);
 	}
 }

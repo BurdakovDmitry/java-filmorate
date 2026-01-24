@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,7 +12,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.dto.DirectorDto;
+import ru.yandex.practicum.filmorate.mapper.DirectorMapper;
 import ru.yandex.practicum.filmorate.service.DirectorService;
+import ru.yandex.practicum.filmorate.validation.Validation;
 
 import java.util.Set;
 
@@ -21,6 +24,8 @@ import java.util.Set;
 @Validated
 public class DirectorController {
 	private final DirectorService directorService;
+	private final DirectorMapper mapper;
+	private final Validation validation;
 
 	@GetMapping
 	public Set<DirectorDto> getAllDirectors() {
@@ -33,12 +38,14 @@ public class DirectorController {
 	}
 
 	@PostMapping
-	public DirectorDto createDirector(@RequestBody DirectorDto directorDto) {
+	public DirectorDto createDirector(@Valid @RequestBody DirectorDto directorDto) {
+		validation.validateDirector(mapper.mapToDirector(directorDto));
 		return directorService.createDirector(directorDto);
 	}
 
 	@PutMapping
-	public DirectorDto updateDirector(@RequestBody DirectorDto directorDto) {
+	public DirectorDto updateDirector(@Valid @RequestBody DirectorDto directorDto) {
+		validation.validateDirector(mapper.mapToDirector(directorDto));
 		return directorService.updateDirector(directorDto);
 	}
 

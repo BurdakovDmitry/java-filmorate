@@ -9,7 +9,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.ResultSet;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -74,13 +74,14 @@ public class GenreDbStorage implements GenreStorage {
 			.toList();
 
 		String fillAllForFilmsQuery =
-			"SELECT fg.film_id, g.genre_id, g.name " +
+				"SELECT fg.film_id, g.genre_id, g.name " +
 				"FROM genre AS g " +
 				"JOIN film_genre AS fg ON g.genre_id = fg.genre_id " +
-				"WHERE fg.film_id IN (" + String.join(",", Collections.nCopies(filmIds.size(), "?")) + ")";
+				"WHERE fg.film_id IN (" + String.join(",", Collections.nCopies(filmIds.size(), "?")) + ")" +
+				"ORDER BY g.genre_id ASC";
 
 		Map<Long, Set<Genre>> genresByFilmId = jdbc.query(fillAllForFilmsQuery, (ResultSet rs) -> {
-			Map<Long, Set<Genre>> result = new HashMap<>();
+			Map<Long, Set<Genre>> result = new LinkedHashMap<>();
 			while (rs.next()) {
 				Long filmId = rs.getLong("film_id");
 				Genre genre = new Genre(rs.getInt("genre_id"), rs.getString("name"));
@@ -90,8 +91,8 @@ public class GenreDbStorage implements GenreStorage {
 		}, filmIds.toArray());
 
 		for (Film film : films) {
-			Set<Genre> genres = genresByFilmId != null ?
-				genresByFilmId.getOrDefault(film.getId(), new LinkedHashSet<>()) : null;
+			Set<Genre> genres = (genresByFilmId != null) ?
+				genresByFilmId.getOrDefault(film.getId(), new LinkedHashSet<>()) : new LinkedHashSet<>();
 			film.setGenres(genres);
 		}
 	}

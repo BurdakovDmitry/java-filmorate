@@ -39,7 +39,7 @@ class GenreDbStorageTest {
 	@BeforeEach
 	public void createData() {
 		Film film = new Film("Name", "Description",
-			LocalDate.of(1995, 12, 12), 125, null);
+			LocalDate.of(1995, 12, 12), 125);
 
 		filmId = filmStorage.createFilm(film).getId();
 		genreSet = new LinkedHashSet<>(List.of(
