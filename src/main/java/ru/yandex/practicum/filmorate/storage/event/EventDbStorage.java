@@ -13,12 +13,8 @@ public class EventDbStorage extends BaseRepository implements EventStorage {
     private final RowMapper<Event> mapper;
     private static final String FIND_BY_ID_QUERY =
             "SELECT event_type, operation_type, entity_id, time_stamp, user_id, id " +
-            "FROM events AS f " +
-            "WHERE f.user_id IN " +
-                    "(SELECT friend_id FROM friends " +
-                    "WHERE user_id = ?" +
-                    "UNION " +
-                    "SELECT user_id FROM users WHERE user_id = ?)";
+            "FROM events " +
+            "WHERE user_id = ? ORDER BY time_stamp ASC";
     private static final String FIND_ALL_QUERY =
             "SELECT event_type, operation_type, entity_id, time_stamp, user_id, id " +
                     "FROM events ";
@@ -47,7 +43,7 @@ public class EventDbStorage extends BaseRepository implements EventStorage {
 
     @Override
     public List<Event> getEvents(Long userId) {
-        return jdbc.query(FIND_BY_ID_QUERY, mapper, userId, userId);
+        return jdbc.query(FIND_BY_ID_QUERY, mapper, userId);
     }
 
     @Override

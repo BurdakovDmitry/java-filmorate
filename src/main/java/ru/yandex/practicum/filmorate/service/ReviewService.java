@@ -71,12 +71,6 @@ public class ReviewService {
     public Review updateReview(Review review) {
         validation.reviewById(review.getId());
 
-        Review lastReview = getReview(review.getId());
-
-        review.setUserId(lastReview.getUserId());
-        review.setFilmId(lastReview.getFilmId());
-        review.setUseful(lastReview.getUseful());
-
         review = reviewStorage.updateReview(review);
 
         var event = new Event();
