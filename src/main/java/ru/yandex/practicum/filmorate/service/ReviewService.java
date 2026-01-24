@@ -36,6 +36,7 @@ public class ReviewService {
         }
         validation.filmById(review.getFilmId());
         validation.userById(review.getUserId());
+        validation.validationReview(review);
         review = reviewStorage.createReview(review);
 
         var event = new Event();
@@ -70,6 +71,7 @@ public class ReviewService {
 
     public Review updateReview(Review review) {
         validation.reviewById(review.getId());
+        validation.validationReview(review);
 
         review = reviewStorage.updateReview(review);
 

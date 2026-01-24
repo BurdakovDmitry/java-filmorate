@@ -10,7 +10,7 @@ public class ReviewMapper {
 		var re = new Review();
 		re.setId(dto.id());
 		re.setContent(dto.content());
-		re.setPositive(dto.isPositive());
+		re.setIsPositive(dto.isPositive());
 		re.setUserId(dto.userId());
 		re.setFilmId(dto.filmId());
 		re.setCreatedAt(LocalDate.now());
