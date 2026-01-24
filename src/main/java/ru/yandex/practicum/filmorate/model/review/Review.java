@@ -14,8 +14,8 @@ public class Review {
 	private String content;
 	private LocalDate createdAt;
 	@JsonProperty("isPositive")
-	private boolean isPositive;
-	private int useful;
+	private Boolean isPositive;
+	private Integer useful;
 	private Long userId;
 	private Long filmId;
 }
