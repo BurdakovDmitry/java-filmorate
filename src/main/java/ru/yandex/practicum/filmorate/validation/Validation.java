@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.review.Review;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
@@ -197,6 +198,18 @@ public class Validation {
 			if (directorStorage.getDirectorById(directorId).isEmpty()) {
 				throw new NotFoundException("Режиссёр с id = " + directorId + " не найден");
 			}
+		}
+	}
+
+	public void validationReview(Review review) {
+		if (review.getContent() == null) {
+			log.warn("Валидация по content не пройдена для {}", review);
+			throw new ValidationException("content review не может быть пустым");
+		}
+
+		if (review.getIsPositive() == null) {
+			log.warn("Валидация по isPositive не пройдена для {}", review);
+			throw new ValidationException("isPositive review не может быть пустым");
 		}
 	}
 }

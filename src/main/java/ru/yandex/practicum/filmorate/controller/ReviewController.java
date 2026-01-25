@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.dto.ReviewDto;
 import ru.yandex.practicum.filmorate.mapper.ReviewMapper;
-import ru.yandex.practicum.filmorate.model.review.Review;
 import ru.yandex.practicum.filmorate.service.ReviewLikeService;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
@@ -26,15 +25,16 @@ import java.util.List;
 public class ReviewController {
 	private final ReviewService reviewService;
 	private final ReviewLikeService reviewLikeService;
+	private final ReviewMapper reviewMapper;
 
 	@PostMapping
-	public Review add(@RequestBody ReviewDto dto) {
-		return reviewService.createReview(ReviewMapper.fromReviewDto(dto));
+	public ReviewDto add(@RequestBody ReviewDto review) {
+		return reviewService.createReview(reviewMapper.mapToReview(review));
 	}
 
 	@PutMapping
-	public Review update(@RequestBody Review review) {
-		return reviewService.updateReview(review);
+	public ReviewDto update(@RequestBody ReviewDto review) {
+		return reviewService.updateReview(reviewMapper.mapToReview(review));
 	}
 
 	@DeleteMapping("/{id}")
@@ -43,7 +43,7 @@ public class ReviewController {
 	}
 
 	@GetMapping("/{id}")
-	public Review get(@PathVariable(required = false) Long id) {
+	public ReviewDto get(@PathVariable(required = false) Long id) {
 		return reviewService.getReview(id);
 	}
 
@@ -54,7 +54,7 @@ public class ReviewController {
 	}
 
 	@GetMapping
-	public List<Review> getByFilmId(@RequestParam(required = false) Long filmId,
+	public List<ReviewDto> getByFilmId(@RequestParam(required = false) Long filmId,
 									@RequestParam(defaultValue = "10") int count) {
 		return reviewService.getReviewsByFilmId(filmId, count);
 	}

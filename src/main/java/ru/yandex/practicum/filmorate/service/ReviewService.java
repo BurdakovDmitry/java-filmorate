@@ -2,7 +2,10 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dto.ReviewDto;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.mapper.ReviewMapper;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.OperationType;
@@ -19,23 +22,26 @@ public class ReviewService {
     private final ReviewStorage reviewStorage;
     private final Validation validation;
     private final EventService eventService;
+    private final ReviewMapper reviewMapper;
 
 
     public ReviewService(Validation validation,
                          ReviewStorage reviewStorage,
-                         EventService eventService) {
+                         EventService eventService, ReviewMapper mapper) {
         this.validation = validation;
         this.reviewStorage = reviewStorage;
         this.eventService = eventService;
+        this.reviewMapper = mapper;
     }
 
-    public Review createReview(Review review) {
+    public ReviewDto createReview(Review review) {
         if (review.getFilmId() == null || review.getUserId() == null) {
             throw new ValidationException("Failed to create review when filmId is " + review.getFilmId() +
                     " userId is " + review.getUserId());
         }
         validation.filmById(review.getFilmId());
         validation.userById(review.getUserId());
+        validation.validationReview(review);
         review = reviewStorage.createReview(review);
 
         var event = new Event();
@@ -45,20 +51,24 @@ public class ReviewService {
         event.setTimestamp(Instant.now());
         event.setEntityId(review.getId());
         eventService.send(event);
-        return review;
+
+        return reviewMapper.mapToReviewDto(review);
     }
 
-    public Review getReview(Long reviewId) {
+    public ReviewDto getReview(Long reviewId) {
         validation.reviewById(reviewId);
 
-        return reviewStorage.getReview(reviewId).get();
+        return reviewStorage.getReview(reviewId)
+                .map(reviewMapper::mapToReviewDto)
+                .orElseThrow(() -> new NotFoundException("Review с id = " + reviewId + " не найден"));
     }
 
     public void deleteReview(Long id) {
         validation.reviewById(id);
 
-        var userId = getReview(id).getUserId();
+        var userId = reviewMapper.mapToReview(getReview(id)).getUserId();
         reviewStorage.deleteReview(id);
+
         var event = new Event();
         event.setEventType(EventType.REVIEW);
         event.setOperation(OperationType.REMOVE);
@@ -68,8 +78,9 @@ public class ReviewService {
         eventService.send(event);
     }
 
-    public Review updateReview(Review review) {
+    public ReviewDto updateReview(Review review) {
         validation.reviewById(review.getId());
+        validation.validationReview(review);
 
         review = reviewStorage.updateReview(review);
 
@@ -80,16 +91,23 @@ public class ReviewService {
         event.setTimestamp(Instant.now());
         event.setEntityId(review.getId());
         eventService.send(event);
-        return review;
+
+        return reviewMapper.mapToReviewDto(review);
     }
 
-    public List<Review> getReviewsByFilmId(Long filmId, int limit) {
+    public List<ReviewDto> getReviewsByFilmId(Long filmId, int limit) {
         if (filmId == null) {
-            return reviewStorage.getAllReviews(limit);
+            return reviewStorage.getAllReviews(limit)
+                    .stream()
+                    .map(reviewMapper::mapToReviewDto)
+                    .toList();
         }
 
         validation.filmById(filmId);
 
-        return reviewStorage.getReviewsByFilmId(filmId, limit);
+        return reviewStorage.getReviewsByFilmId(filmId, limit)
+                .stream()
+                .map(reviewMapper::mapToReviewDto)
+                .toList();
     }
 }

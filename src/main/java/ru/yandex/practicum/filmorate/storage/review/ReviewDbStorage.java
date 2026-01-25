@@ -11,42 +11,41 @@ import java.util.Optional;
 
 @Repository
 public class ReviewDbStorage extends BaseRepository implements ReviewStorage {
-    private final RowMapper<Review> mapper;
-    private static final String INSERT_QUERY =
-            "INSERT INTO reviews (content, is_positive, user_id, film_id, useful, created_at) VALUES (?, ?, ?, ?, ?, ?)";
-    private static final String UPDATE_QUERY =
-            "UPDATE reviews SET content = ?, is_positive = ? WHERE id = ?";
-    private static final String SELECT_QUERY =
-            "SELECT * FROM reviews WHERE id = ?";
-    private static final String DELETE_QUERY =
-            "DELETE FROM reviews WHERE id = ?";
-    private static final String FIND_BY_FILM_ID =
+	private static final String INSERT_QUERY =
+			"INSERT INTO reviews (content, is_positive, user_id, film_id, useful, created_at) VALUES (?, ?, ?, ?, ?, ?)";
+	private static final String UPDATE_QUERY =
+			"UPDATE reviews SET content = ?, is_positive = ? WHERE id = ?";
+	private static final String SELECT_QUERY =
+			"SELECT * FROM reviews WHERE id = ?";
+	private static final String DELETE_QUERY =
+			"DELETE FROM reviews WHERE id = ?";
+	private static final String FIND_BY_FILM_ID =
 			"SELECT id, content, is_positive, user_id, film_id, useful, created_at " +
-            "FROM reviews " +
-            "WHERE film_id = ? " +
-			"ORDER BY useful DESC " +
-            "LIMIT ?";
-    private static final String FIND_All =
+					"FROM reviews " +
+					"WHERE film_id = ? " +
+					"ORDER BY useful DESC " +
+					"LIMIT ?";
+	private static final String FIND_All =
 			"SELECT id, content, is_positive, user_id, film_id, useful, created_at " +
-            "FROM reviews " +
-			"ORDER BY useful DESC " +
-            "LIMIT ?";
+					"FROM reviews " +
+					"ORDER BY useful DESC " +
+					"LIMIT ?";
+	private final RowMapper<Review> mapper;
 
 	public ReviewDbStorage(JdbcTemplate jdbc, RowMapper<Review> mapper) {
 		super(jdbc);
 		this.mapper = mapper;
 	}
 
-
 	@Override
 	public Review createReview(Review review) {
 		var id = super.insert(INSERT_QUERY,
-			review.getContent(),
-			review.isPositive(),
-			review.getUserId(),
-			review.getFilmId(),
-			0,
-			review.getCreatedAt());
+				review.getContent(),
+				review.getIsPositive(),
+				review.getUserId(),
+				review.getFilmId(),
+				0,
+				review.getCreatedAt());
 
 		review.setId(id);
 		return review;
@@ -62,12 +61,12 @@ public class ReviewDbStorage extends BaseRepository implements ReviewStorage {
 		super.update(DELETE_QUERY, id);
 	}
 
-    @Override
-    public Review updateReview(Review review) {
-        super.update(UPDATE_QUERY,
-                review.getContent(),
-                review.isPositive(),
-                review.getId());
+	@Override
+	public Review updateReview(Review review) {
+		super.update(UPDATE_QUERY,
+				review.getContent(),
+				review.getIsPositive(),
+				review.getId());
 
 		return getReview(review.getId()).get();
 	}
@@ -81,5 +80,4 @@ public class ReviewDbStorage extends BaseRepository implements ReviewStorage {
 	public List<Review> getAllReviews(int limit) {
 		return jdbc.query(FIND_All, mapper, limit);
 	}
-
 }
