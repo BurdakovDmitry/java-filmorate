@@ -33,38 +33,39 @@ public class InMemoryFilmStorage implements FilmStorage {
 
 	@Override
 	public Film updateFilm(Film film) {
-		if (films.containsKey(film.getId())) {
-			Film oldFilm = films.get(film.getId());
-
-			if (!film.getName().equals(oldFilm.getName())) {
-				log.info("Было имя = {}", oldFilm.getName());
-				oldFilm.setName(film.getName());
-				log.info("Присвоено новое имя = {}", film.getName());
-			}
-
-			if (!film.getDescription().equals(oldFilm.getDescription())) {
-				log.info("Было описание = {}", oldFilm.getDescription());
-				oldFilm.setDescription(film.getDescription());
-				log.info("Присвоено новое описание = {}", film.getDescription());
-			}
-
-			if (film.getDuration() != oldFilm.getDuration()) {
-				log.info("Была продолжительность = {}", oldFilm.getDuration());
-				oldFilm.setDuration(film.getDuration());
-				log.info("Присвоена новая продолжительность = {}", film.getDuration());
-			}
-
-			if (!film.getReleaseDate().equals(oldFilm.getReleaseDate())) {
-				log.info("Старая дата релиза = {}", oldFilm.getReleaseDate());
-				oldFilm.setReleaseDate(film.getReleaseDate());
-				log.info("Новая дата релиза = {}", film.getReleaseDate());
-			}
-			films.put(film.getId(), oldFilm);
-			return oldFilm;
+		if (!films.containsKey(film.getId())) {
+			log.error("Ошибка поиска фильма - {}", film);
+			throw new NotFoundException("Фильм с id = " + film.getId() + " не найден");
 		}
 
-		log.error("Ошибка поиска фильма - {}", film);
-		throw new NotFoundException("Фильм с id = " + film.getId() + " не найден");
+		Film oldFilm = films.get(film.getId());
+
+		if (!film.getName().equals(oldFilm.getName())) {
+			log.info("Было имя = {}", oldFilm.getName());
+			oldFilm.setName(film.getName());
+			log.info("Присвоено новое имя = {}", film.getName());
+		}
+
+		if (!film.getDescription().equals(oldFilm.getDescription())) {
+			log.info("Было описание = {}", oldFilm.getDescription());
+			oldFilm.setDescription(film.getDescription());
+			log.info("Присвоено новое описание = {}", film.getDescription());
+		}
+
+		if (film.getDuration() != oldFilm.getDuration()) {
+			log.info("Была продолжительность = {}", oldFilm.getDuration());
+			oldFilm.setDuration(film.getDuration());
+			log.info("Присвоена новая продолжительность = {}", film.getDuration());
+		}
+
+		if (!film.getReleaseDate().equals(oldFilm.getReleaseDate())) {
+			log.info("Старая дата релиза = {}", oldFilm.getReleaseDate());
+			oldFilm.setReleaseDate(film.getReleaseDate());
+			log.info("Новая дата релиза = {}", film.getReleaseDate());
+		}
+
+		films.put(film.getId(), oldFilm);
+		return oldFilm;
 	}
 
 	public Optional<Film> getFilmById(Long filmId) {

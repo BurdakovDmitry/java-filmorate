@@ -19,16 +19,22 @@ import java.util.Set;
 @Repository
 @RequiredArgsConstructor
 public class GenreDbStorage implements GenreStorage {
-	private static final String FIND_ALL_QUERY = "SELECT * FROM genre ORDER BY genre_id";
-	private static final String FIND_BY_ID_QUERY = "SELECT * FROM genre WHERE genre_id = ?";
-	private static final String INSERT_QUERY = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
-	private static final String DELETE_QUERY = "DELETE FROM film_genre WHERE film_id = ?";
-	private static final String FIND_BY_FILM_ID_QUERY =
-		"SELECT g.genre_id, g.name " +
-			"FROM genre AS g " +
-			"JOIN film_genre AS fg ON g.genre_id = fg.genre_id " +
-			"WHERE fg.film_id = ? " +
-			"ORDER BY g.genre_id";
+	private static final String FIND_ALL_QUERY =
+		"SELECT genre_id, name FROM genre ORDER BY genre_id";
+	private static final String FIND_BY_ID_QUERY =
+		"SELECT genre_id, name FROM genre WHERE genre_id = ?";
+	private static final String INSERT_QUERY =
+		"INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
+	private static final String DELETE_QUERY =
+		"DELETE FROM film_genre WHERE film_id = ?";
+	private static final String FIND_BY_FILM_ID_QUERY = """
+		SELECT g.genre_id, g.name
+		FROM genre AS g
+		JOIN film_genre AS fg ON g.genre_id = fg.genre_id
+		WHERE fg.film_id = ?
+		ORDER BY g.genre_id
+		""";
+
 	private final JdbcTemplate jdbc;
 	private final RowMapper<Genre> mapper;
 

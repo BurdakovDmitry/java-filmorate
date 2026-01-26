@@ -11,9 +11,13 @@ import java.util.List;
 @Repository
 @RequiredArgsConstructor
 public class FriendDbStorage implements FriendStorage {
-	private static final String INSERT_QUERY = "INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, ?)";
-	private static final String DELETE_QUERY = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
-	private static final String FIND_BY_ID_QUERY = "SELECT * FROM friends WHERE user_id = ?";
+	private static final String INSERT_QUERY =
+		"INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, ?)";
+	private static final String DELETE_QUERY =
+		"DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
+	private static final String FIND_BY_ID_QUERY =
+		"SELECT user_id, friend_id, status FROM friends WHERE user_id = ?";
+
 	private final JdbcTemplate jdbc;
 	private final RowMapper<Friend> mapper;
 

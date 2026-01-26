@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.review;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.review.Review;
 import ru.yandex.practicum.filmorate.storage.BaseRepository;
 
@@ -16,20 +17,23 @@ public class ReviewDbStorage extends BaseRepository implements ReviewStorage {
 	private static final String UPDATE_QUERY =
 			"UPDATE reviews SET content = ?, is_positive = ? WHERE id = ?";
 	private static final String SELECT_QUERY =
-			"SELECT * FROM reviews WHERE id = ?";
+			"SELECT id, content, is_positive, user_id, film_id, useful, created_at FROM reviews WHERE id = ?";
 	private static final String DELETE_QUERY =
 			"DELETE FROM reviews WHERE id = ?";
-	private static final String FIND_BY_FILM_ID =
-			"SELECT id, content, is_positive, user_id, film_id, useful, created_at " +
-					"FROM reviews " +
-					"WHERE film_id = ? " +
-					"ORDER BY useful DESC " +
-					"LIMIT ?";
-	private static final String FIND_All =
-			"SELECT id, content, is_positive, user_id, film_id, useful, created_at " +
-					"FROM reviews " +
-					"ORDER BY useful DESC " +
-					"LIMIT ?";
+	private static final String FIND_BY_FILM_ID = """
+			SELECT id, content, is_positive, user_id, film_id, useful, created_at
+			FROM reviews
+			WHERE film_id = ?
+			ORDER BY useful DESC
+			LIMIT ?
+			""";
+	private static final String FIND_All = """
+			SELECT id, content, is_positive, user_id, film_id, useful, created_at
+			FROM reviews
+			ORDER BY useful DESC
+			LIMIT ?
+			""";
+
 	private final RowMapper<Review> mapper;
 
 	public ReviewDbStorage(JdbcTemplate jdbc, RowMapper<Review> mapper) {
@@ -68,7 +72,8 @@ public class ReviewDbStorage extends BaseRepository implements ReviewStorage {
 				review.getIsPositive(),
 				review.getId());
 
-		return getReview(review.getId()).get();
+		return getReview(review.getId())
+				.orElseThrow(() -> new NotFoundException("Ошибка при получении обновленного отзыва"));
 	}
 
 	@Override

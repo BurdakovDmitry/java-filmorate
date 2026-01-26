@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.review.like;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -31,18 +30,12 @@ public class ReviewLikeDbStorage extends BaseRepository implements ReviewLikeSto
 	}
 
 	public Optional<ReviewLike> getLike(Long reviewId, Long userId) {
-		try {
-			ReviewLike genre = jdbc.queryForObject(
+		return jdbc.query(
 				FIND_QUERY,
 				new BeanPropertyRowMapper<>(ReviewLike.class),
 				reviewId,
 				userId
-			);
-			return Optional.ofNullable(genre);
-		} catch (EmptyResultDataAccessException e) {
-			return Optional.empty();
-		}
-
+		).stream().findFirst();
 	}
 
 

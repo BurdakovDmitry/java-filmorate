@@ -7,8 +7,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class LikeDbStorage implements LikeStorage {
-	private static final String INSERT_QUERY = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
-	private static final String DELETE_QUERY = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
+	private static final String INSERT_QUERY =
+		"INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
+	private static final String DELETE_QUERY =
+		"DELETE FROM likes WHERE film_id = ? AND user_id = ?";
+
 	private final JdbcTemplate jdbc;
 
 	@Override

@@ -12,8 +12,11 @@ import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
 public class MpaDbStorage implements MpaStorage {
-	private static final String FIND_ALL_QUERY = "SELECT * FROM film_mpa ORDER BY mpa_id";
-	private static final String FIND_BY_ID_QUERY = "SELECT * FROM film_mpa WHERE mpa_id = ?";
+	private static final String FIND_ALL_QUERY =
+		"SELECT mpa_id, mpa_name FROM film_mpa ORDER BY mpa_id";
+	private static final String FIND_BY_ID_QUERY =
+		"SELECT mpa_id, mpa_name FROM film_mpa WHERE mpa_id = ?";
+
 	private final JdbcTemplate jdbc;
 	private final RowMapper<Mpa> mapper;
 

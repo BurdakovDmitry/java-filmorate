@@ -7,11 +7,11 @@ import java.util.Set;
 
 public record FilmDto(
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	long id,
+	Long id,
 	String name,
 	String description,
 	LocalDate releaseDate,
-	int duration,
+	Integer duration,
 	MpaDto mpa,
 	Set<GenreDto> genres,
 	Set<DirectorDto> directors) {

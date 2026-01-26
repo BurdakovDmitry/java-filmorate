@@ -149,12 +149,12 @@ public class Validation {
 		if (film.getDescription() != null && film.getDescription().length() > MAX_SIZE_DESCRIPTION) {
 			log.warn("Валидация по description не пройдена для {}", film);
 			throw new ValidationException("Было введено " + film.getDescription().length() + " символов. " +
-				"Максимальное количество - 200 символов.");
+				"Максимальное количество - " + MAX_SIZE_DESCRIPTION + " символов.");
 		}
 
 		if (film.getReleaseDate() != null && film.getReleaseDate().isBefore(MINIMUM_RELEASE_DATE)) {
 			log.warn("Валидация по releaseDate не пройдена для {}", film);
-			throw new ValidationException("Дата не может быть раньше 28.12.1895 года");
+			throw new ValidationException("Дата не может быть раньше " + MINIMUM_RELEASE_DATE + " года");
 		}
 
 		if (film.getDuration() < 0) {

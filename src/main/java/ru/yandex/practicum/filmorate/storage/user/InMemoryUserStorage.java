@@ -45,56 +45,56 @@ public class InMemoryUserStorage implements UserStorage {
 
 	@Override
 	public User updateUser(User user) {
-		if (users.containsKey(user.getId())) {
-			User oldUser = users.get(user.getId());
-
-			if (!user.getEmail().equals(oldUser.getEmail())) {
-				if (uniqueEmail.containsKey(user.getEmail())) {
-					log.warn("Валидация по email не пройдена у {}", user);
-					throw new DuplicatedDataException("Этот имейл уже используется");
-				}
-
-				log.info("Был имейл = {}", oldUser.getEmail());
-				oldUser.setEmail(user.getEmail());
-				log.info("Присвоен новый имейл = {}", user.getEmail());
-			}
-
-			if (!user.getLogin().equals(oldUser.getLogin())) {
-				if (uniqueLogin.containsKey(user.getLogin())) {
-					log.warn("Валидация по login не пройдена у {}", user);
-					throw new DuplicatedDataException("Этот логин уже используется");
-				}
-
-				log.info("Был логин = {}", oldUser.getLogin());
-				oldUser.setLogin(user.getLogin());
-				log.info("Присвоен новый логин = {}", user.getLogin());
-			}
-
-			if (user.getName() == null || user.getName().isBlank()) {
-				oldUser.setName(user.getLogin());
-				log.info("Так как имя пользователя не указано, то имя = логин {}", user.getLogin());
-			}
-
-			if (!user.getName().equals(oldUser.getName())) {
-				log.info("Было имя = {}", oldUser.getName());
-				oldUser.setName(user.getName());
-				log.info("Присвоено новое имя = {}", user.getName());
-			}
-
-			if (!user.getBirthday().equals(oldUser.getBirthday())) {
-				log.info("Старая дата рождения = {}", oldUser.getBirthday());
-				oldUser.setBirthday(user.getBirthday());
-				log.info("Новая дата рождения = {}", user.getBirthday());
-			}
-
-			users.put(oldUser.getId(), oldUser);
-			uniqueEmail.put(oldUser.getEmail(), oldUser);
-			uniqueLogin.put(oldUser.getLogin(), oldUser);
-			return oldUser;
+		if (!users.containsKey(user.getId())) {
+			log.error("Ошибка поиска пользователя - {}", user);
+			throw new NotFoundException("Пользователь с id = " + user.getId() + " не найден");
 		}
 
-		log.error("Ошибка поиска пользователя - {}", user);
-		throw new NotFoundException("Пользователь с id = " + user.getId() + " не найден");
+		User oldUser = users.get(user.getId());
+
+		if (!user.getEmail().equals(oldUser.getEmail())) {
+			if (uniqueEmail.containsKey(user.getEmail())) {
+				log.warn("Валидация по email не пройдена у {}", user);
+				throw new DuplicatedDataException("Этот имейл уже используется");
+			}
+
+			log.info("Был имейл = {}", oldUser.getEmail());
+			oldUser.setEmail(user.getEmail());
+			log.info("Присвоен новый имейл = {}", user.getEmail());
+		}
+
+		if (!user.getLogin().equals(oldUser.getLogin())) {
+			if (uniqueLogin.containsKey(user.getLogin())) {
+				log.warn("Валидация по login не пройдена у {}", user);
+				throw new DuplicatedDataException("Этот логин уже используется");
+			}
+
+			log.info("Был логин = {}", oldUser.getLogin());
+			oldUser.setLogin(user.getLogin());
+			log.info("Присвоен новый логин = {}", user.getLogin());
+		}
+
+		if (user.getName() == null || user.getName().isBlank()) {
+			oldUser.setName(user.getLogin());
+			log.info("Так как имя пользователя не указано, то имя = логин {}", user.getLogin());
+		}
+
+		if (!user.getName().equals(oldUser.getName())) {
+			log.info("Было имя = {}", oldUser.getName());
+			oldUser.setName(user.getName());
+			log.info("Присвоено новое имя = {}", user.getName());
+		}
+
+		if (!user.getBirthday().equals(oldUser.getBirthday())) {
+			log.info("Старая дата рождения = {}", oldUser.getBirthday());
+			oldUser.setBirthday(user.getBirthday());
+			log.info("Новая дата рождения = {}", user.getBirthday());
+		}
+
+		users.put(oldUser.getId(), oldUser);
+		uniqueEmail.put(oldUser.getEmail(), oldUser);
+		uniqueLogin.put(oldUser.getLogin(), oldUser);
+		return oldUser;
 	}
 
 	@Override

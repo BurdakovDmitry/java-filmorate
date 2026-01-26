@@ -10,25 +10,22 @@ import java.util.List;
 
 @Repository
 public class EventDbStorage extends BaseRepository implements EventStorage {
-    private final RowMapper<Event> mapper;
-    private static final String FIND_BY_ID_QUERY =
-            "SELECT event_type, operation_type, entity_id, time_stamp, user_id, id " +
-            "FROM events " +
-            "WHERE user_id = ? ORDER BY time_stamp ASC";
+    private static final String FIND_BY_ID_QUERY = """
+            SELECT event_type, operation_type, entity_id, time_stamp, user_id, id
+            FROM events
+            WHERE user_id = ? ORDER BY time_stamp ASC
+            """;
     private static final String FIND_ALL_QUERY =
-            "SELECT event_type, operation_type, entity_id, time_stamp, user_id, id " +
-                    "FROM events ";
+            "SELECT event_type, operation_type, entity_id, time_stamp, user_id, id FROM events ";
     private static final String INSERT_QUERY =
-            "INSERT INTO events (event_type, operation_type, entity_id, time_stamp, user_id) " +
-                    "VALUES (?, ?, ?, ?, ?)";
+            "INSERT INTO events (event_type, operation_type, entity_id, time_stamp, user_id) VALUES (?, ?, ?, ?, ?)";
 
-
+    private final RowMapper<Event> mapper;
 
     public EventDbStorage(JdbcTemplate jdbc, RowMapper<Event> mapper) {
         super(jdbc);
         this.mapper = mapper;
     }
-
 
     @Override
     public Event createEvent(Event event) {
