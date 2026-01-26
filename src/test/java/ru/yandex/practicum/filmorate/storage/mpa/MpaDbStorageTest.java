@@ -19,35 +19,35 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class MpaDbStorageTest {
-    private final MpaDbStorage mpaStorage;
+	private final MpaDbStorage mpaStorage;
 
-    @Test
-    public void getMpa() {
-        List<Mpa> mpaList = mpaStorage.getMpa();
+	@Test
+	public void getMpa() {
+		List<Mpa> mpaList = mpaStorage.getMpa();
 
-        assertThat(mpaList)
-                .isNotEmpty()
-                .hasSize(5)
-                .extracting(Mpa::getName)
-                .containsExactly("G", "NC-17", "PG", "PG-13", "R");
-    }
+		assertThat(mpaList)
+			.isNotEmpty()
+			.hasSize(5)
+			.extracting(Mpa::getName)
+			.containsExactly("G", "PG", "PG-13", "R", "NC-17");
+	}
 
-    @Test
-    public void getMpaById() {
-        Optional<Mpa> mpaOptional = mpaStorage.getMpaById(1);
+	@Test
+	public void getMpaById() {
+		Optional<Mpa> mpaOptional = mpaStorage.getMpaById(1);
 
-        assertThat(mpaOptional)
-                .isPresent()
-                .hasValueSatisfying(mpa -> {
-                    assertThat(mpa).hasFieldOrPropertyWithValue("id", 1);
-                    assertThat(mpa).hasFieldOrPropertyWithValue("name", "G");
-                });
-    }
+		assertThat(mpaOptional)
+			.isPresent()
+			.hasValueSatisfying(mpa -> {
+				assertThat(mpa).hasFieldOrPropertyWithValue("id", 1);
+				assertThat(mpa).hasFieldOrPropertyWithValue("name", "G");
+			});
+	}
 
-    @Test
-    public void getMpaUnknownId() {
-        Optional<Mpa> mpaOptional = mpaStorage.getMpaById(100);
+	@Test
+	public void getMpaUnknownId() {
+		Optional<Mpa> mpaOptional = mpaStorage.getMpaById(100);
 
-        assertThat(mpaOptional).isEmpty();
-    }
+		assertThat(mpaOptional).isEmpty();
+	}
 }

@@ -1,0 +1,50 @@
+package ru.yandex.practicum.filmorate.storage.event;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.storage.BaseRepository;
+
+import java.util.List;
+
+@Repository
+public class EventDbStorage extends BaseRepository implements EventStorage {
+    private static final String FIND_BY_ID_QUERY = """
+            SELECT event_type, operation_type, entity_id, time_stamp, user_id, id
+            FROM events
+            WHERE user_id = ? ORDER BY time_stamp ASC
+            """;
+    private static final String FIND_ALL_QUERY =
+            "SELECT event_type, operation_type, entity_id, time_stamp, user_id, id FROM events ";
+    private static final String INSERT_QUERY =
+            "INSERT INTO events (event_type, operation_type, entity_id, time_stamp, user_id) VALUES (?, ?, ?, ?, ?)";
+
+    private final RowMapper<Event> mapper;
+
+    public EventDbStorage(JdbcTemplate jdbc, RowMapper<Event> mapper) {
+        super(jdbc);
+        this.mapper = mapper;
+    }
+
+    @Override
+    public Event createEvent(Event event) {
+        event.setId(super.insert(INSERT_QUERY,
+                event.getEventType().toString(),
+                event.getOperation().toString(),
+                event.getEntityId(),
+                event.getTimestamp().toEpochMilli(),
+                event.getUserId()));
+        return event;
+    }
+
+    @Override
+    public List<Event> getEvents(Long userId) {
+        return jdbc.query(FIND_BY_ID_QUERY, mapper, userId);
+    }
+
+    @Override
+    public List<Event> getEvents() {
+        return jdbc.query(FIND_ALL_QUERY, mapper);
+    }
+}

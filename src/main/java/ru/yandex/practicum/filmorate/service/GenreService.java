@@ -16,25 +16,25 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class GenreService {
-    private final GenreStorage genreStorage;
-    private final GenreMapper genreMapper;
+	private final GenreStorage genreStorage;
+	private final GenreMapper genreMapper;
 
-    public Set<GenreDto> getGenre() {
-        Set<GenreDto> genre = genreStorage.getGenre()
-                .stream()
-                .map(genreMapper::mapToGenreDto)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+	public Set<GenreDto> getGenre() {
+		Set<GenreDto> genre = genreStorage.getGenre()
+			.stream()
+			.map(genreMapper::mapToGenreDto)
+			.collect(Collectors.toCollection(LinkedHashSet::new));
 
-        log.debug("Получен список жанров: {}", genre);
-        return genre;
-    }
+		log.debug("Получен список жанров: {}", genre);
+		return genre;
+	}
 
-    public GenreDto getGenreById(Integer id) {
-        return genreStorage.getGenreById(id)
-                .map(genreMapper::mapToGenreDto)
-                .orElseThrow(() -> {
-                    log.warn("Жанр с id = {} не найден", id);
-                    return new NotFoundException("Жанр фильма с id = " + id + " не найден");
-                });
-    }
+	public GenreDto getGenreById(Integer id) {
+		return genreStorage.getGenreById(id)
+			.map(genreMapper::mapToGenreDto)
+			.orElseThrow(() -> {
+				log.warn("Жанр с id = {} не найден", id);
+				return new NotFoundException("Жанр фильма с id = " + id + " не найден");
+			});
+	}
 }
